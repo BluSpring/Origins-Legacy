@@ -11,33 +11,32 @@ import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
-import net.minecraft.command.CommandSource;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
-public class OriginArgumentType implements ArgumentType<Identifier> {
+public class OriginArgumentType implements ArgumentType<ResourceLocation> {
 
    public static final DynamicCommandExceptionType ORIGIN_NOT_FOUND = new DynamicCommandExceptionType(
-       o -> Text.translatable("commands.origin.origin_not_found", o)
+       o -> Component.translatable("commands.origin.origin_not_found", o)
    );
 
    public static OriginArgumentType origin() {
       return new OriginArgumentType();
    }
 
-   public Identifier parse(StringReader stringReader) throws CommandSyntaxException {
-      return Identifier.fromCommandInput(stringReader);
+   public ResourceLocation parse(StringReader stringReader) throws CommandSyntaxException {
+      return ResourceLocation.read(stringReader);
    }
 
-   public static Origin getOrigin(CommandContext<ServerCommandSource> context, String argumentName) throws CommandSyntaxException {
+   public static Origin getOrigin(CommandContext<CommandSourceStack> context, String argumentName) throws CommandSyntaxException {
 
-      Identifier id = context.getArgument(argumentName, Identifier.class);
+      ResourceLocation id = context.getArgument(argumentName, ResourceLocation.class);
 
       try {
          return OriginRegistry.get(id);
@@ -52,10 +51,10 @@ public class OriginArgumentType implements ArgumentType<Identifier> {
    @Override
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
 
-      List<Identifier> availableOrigins = new ArrayList<>();
+      List<ResourceLocation> availableOrigins = new ArrayList<>();
 
       try {
-          Identifier originLayerId = context.getArgument("layer", Identifier.class);
+          ResourceLocation originLayerId = context.getArgument("layer", ResourceLocation.class);
           OriginLayer originLayer = OriginLayers.getLayer(originLayerId);
 
           availableOrigins.add(Origin.EMPTY.getIdentifier());
@@ -64,7 +63,7 @@ public class OriginArgumentType implements ArgumentType<Identifier> {
 
       catch(IllegalArgumentException ignored) {}
 
-      return CommandSource.suggestIdentifiers(availableOrigins.stream(), builder);
+      return SharedSuggestionProvider.suggestResource(availableOrigins.stream(), builder);
 
    }
 

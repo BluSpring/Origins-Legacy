@@ -10,20 +10,23 @@ import io.github.apace100.origins.registry.ModComponents;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemGroups;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.*;
-import net.minecraft.world.World;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -33,13 +36,13 @@ import java.util.Map;
 public class OrbOfOriginItem extends Item {
 
     public OrbOfOriginItem() {
-        super(new Item.Settings().maxCount(1).rarity(Rarity.RARE));
+        super(new Item.Properties().stacksTo(1).rarity(Rarity.RARE));
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        ItemStack stack = user.getStackInHand(hand);
-        if(!world.isClient) {
+    public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+        ItemStack stack = user.getItemInHand(hand);
+        if(!world.isClientSide) {
             OriginComponent component = ModComponents.ORIGIN.get(user);
             Map<OriginLayer, Origin> targets = getTargets(stack);
             if(targets.size() > 0) {
@@ -55,50 +58,50 @@ public class OrbOfOriginItem extends Item {
             }
             component.checkAutoChoosingLayers(user, false);
             component.sync();
-            PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
+            FriendlyByteBuf data = new FriendlyByteBuf(Unpooled.buffer());
             data.writeBoolean(false);
-            ServerPlayNetworking.send((ServerPlayerEntity) user, ModPackets.OPEN_ORIGIN_SCREEN, data);
+            ServerPlayNetworking.send((ServerPlayer) user, ModPackets.OPEN_ORIGIN_SCREEN, data);
         }
         if(!user.isCreative()) {
-            stack.decrement(1);
+            stack.shrink(1);
         }
-        return TypedActionResult.consume(stack);
+        return InteractionResultHolder.consume(stack);
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
         Map<OriginLayer, Origin> targets = getTargets(stack);
         for(Map.Entry<OriginLayer, Origin> target : targets.entrySet()) {
             if(target.getValue() == Origin.EMPTY) {
-                tooltip.add(Text.translatable("item.origins.orb_of_origin.layer_generic",
-                    Text.translatable(target.getKey().getTranslationKey())).formatted(Formatting.GRAY));
+                tooltip.add(Component.translatable("item.origins.orb_of_origin.layer_generic",
+                    Component.translatable(target.getKey().getTranslationKey())).withStyle(ChatFormatting.GRAY));
             } else {
-                tooltip.add(Text.translatable("item.origins.orb_of_origin.layer_specific",
-                    Text.translatable(target.getKey().getTranslationKey()),
-                    target.getValue().getName()).formatted(Formatting.GRAY));
+                tooltip.add(Component.translatable("item.origins.orb_of_origin.layer_specific",
+                    Component.translatable(target.getKey().getTranslationKey()),
+                    target.getValue().getName()).withStyle(ChatFormatting.GRAY));
             }
         }
     }
 
     private Map<OriginLayer, Origin> getTargets(ItemStack stack) {
         HashMap<OriginLayer, Origin> targets = new HashMap<>();
-        if(!stack.hasNbt()) {
+        if(!stack.hasTag()) {
             return targets;
         }
-        NbtCompound nbt = stack.getNbt();
+        CompoundTag nbt = stack.getTag();
         if(!nbt.contains("Targets", NbtType.LIST)) {
             return targets;
         }
-        NbtList targetList = (NbtList)nbt.get("Targets");
-        for (NbtElement nbtElement : targetList) {
-            if(nbtElement instanceof NbtCompound targetNbt) {
+        ListTag targetList = (ListTag)nbt.get("Targets");
+        for (Tag nbtElement : targetList) {
+            if(nbtElement instanceof CompoundTag targetNbt) {
                 if(targetNbt.contains("Layer", NbtType.STRING)) {
                     try {
-                        Identifier id = new Identifier(targetNbt.getString("Layer"));
+                        ResourceLocation id = new ResourceLocation(targetNbt.getString("Layer"));
                         OriginLayer layer = OriginLayers.getLayer(id);
                         Origin origin = Origin.EMPTY;
                         if(targetNbt.contains("Origin", NbtType.STRING)) {
-                            Identifier originId = new Identifier(targetNbt.getString("Origin"));
+                            ResourceLocation originId = new ResourceLocation(targetNbt.getString("Origin"));
                             origin = OriginRegistry.get(originId);
                         }
                         if(layer.isEnabled() && (layer.contains(origin) || origin.isSpecial())) {

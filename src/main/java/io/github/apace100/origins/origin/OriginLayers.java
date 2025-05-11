@@ -8,17 +8,16 @@ import io.github.apace100.calio.data.MultiJsonDataLoader;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.integration.OriginDataLoadedCallback;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.profiler.Profiler;
-
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.util.profiling.ProfilerFiller;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class OriginLayers extends MultiJsonDataLoader implements IdentifiableResourceReloadListener {
 
-    private static final HashMap<Identifier, OriginLayer> layers = new HashMap<>();
+    private static final HashMap<ResourceLocation, OriginLayer> layers = new HashMap<>();
     private static int minLayerPriority = Integer.MIN_VALUE;
 
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
@@ -28,9 +27,9 @@ public class OriginLayers extends MultiJsonDataLoader implements IdentifiableRes
     }
 
     @Override
-    protected void apply(Map<Identifier, List<JsonElement>> loader, ResourceManager manager, Profiler profiler) {
+    protected void apply(Map<ResourceLocation, List<JsonElement>> loader, ResourceManager manager, ProfilerFiller profiler) {
         clear();
-        HashMap<Identifier, HashMap<Integer, List<JsonObject>>> layers = new HashMap<>();
+        HashMap<ResourceLocation, HashMap<Integer, List<JsonObject>>> layers = new HashMap<>();
         // Load phase
         loader.forEach((id, jel) -> {
             minLayerPriority = Integer.MIN_VALUE;
@@ -38,8 +37,8 @@ public class OriginLayers extends MultiJsonDataLoader implements IdentifiableRes
                 try {
                     Origins.LOGGER.info("Trying to read layer file: " + id);
                     JsonObject jo = je.getAsJsonObject();
-                    boolean replace = JsonHelper.getBoolean(jo, "replace", false);
-                    int priority = JsonHelper.getInt(jo, "loading_priority", 0);
+                    boolean replace = GsonHelper.getAsBoolean(jo, "replace", false);
+                    int priority = GsonHelper.getAsInt(jo, "loading_priority", 0);
                     if(priority >= minLayerPriority) {
                         HashMap<Integer, List<JsonObject>> inner = layers.computeIfAbsent(id, ident -> new HashMap<>());
                         List<JsonObject> layerList = inner.computeIfAbsent(priority, prio -> new LinkedList<>());
@@ -55,8 +54,8 @@ public class OriginLayers extends MultiJsonDataLoader implements IdentifiableRes
             });
         });
         // Merge phase
-        for (Map.Entry<Identifier, HashMap<Integer, List<JsonObject>>> layerToLoad : layers.entrySet()) {
-            Identifier layerId = layerToLoad.getKey();
+        for (Map.Entry<ResourceLocation, HashMap<Integer, List<JsonObject>>> layerToLoad : layers.entrySet()) {
+            ResourceLocation layerId = layerToLoad.getKey();
             List<Integer> keys = layerToLoad.getValue().keySet().stream().sorted().collect(Collectors.toList());
             OriginLayer layer = null;
             for(Integer key : keys) {
@@ -74,7 +73,7 @@ public class OriginLayers extends MultiJsonDataLoader implements IdentifiableRes
         OriginDataLoadedCallback.EVENT.invoker().onDataLoaded(false);
     }
 
-    public static OriginLayer getLayer(Identifier id) {
+    public static OriginLayer getLayer(ResourceLocation id) {
         if (!layers.containsKey(id)) throw new IllegalArgumentException("Could not get layer from id '" + id.toString() + "', as it doesn't exist!");
         else return layers.get(id);
     }
@@ -96,12 +95,12 @@ public class OriginLayers extends MultiJsonDataLoader implements IdentifiableRes
     }
 
     @Override
-    public Identifier getFabricId() {
-        return new Identifier(Origins.MODID, "origin_layers");
+    public ResourceLocation getFabricId() {
+        return new ResourceLocation(Origins.MODID, "origin_layers");
     }
 
     @Override
-    public Collection<Identifier> getFabricDependencies() {
+    public Collection<ResourceLocation> getFabricDependencies() {
         return Set.of(Origins.identifier("origins"));
     }
 }

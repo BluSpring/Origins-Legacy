@@ -23,12 +23,11 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientLoginNetworkHandler;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -48,21 +47,21 @@ public class ModPacketsS2C {
     }
 
     @Environment(EnvType.CLIENT)
-    private static void receiveOriginConfirmation(MinecraftClient minecraftClient, ClientPlayNetworkHandler clientPlayNetworkHandler, PacketByteBuf packetByteBuf, PacketSender packetSender) {
-        OriginLayer layer = OriginLayers.getLayer(packetByteBuf.readIdentifier());
-        Origin origin = OriginRegistry.get(packetByteBuf.readIdentifier());
+    private static void receiveOriginConfirmation(Minecraft minecraftClient, ClientPacketListener clientPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
+        OriginLayer layer = OriginLayers.getLayer(packetByteBuf.readResourceLocation());
+        Origin origin = OriginRegistry.get(packetByteBuf.readResourceLocation());
         minecraftClient.execute(() -> {
             OriginComponent component = ModComponents.ORIGIN.get(minecraftClient.player);
             component.setOrigin(layer, origin);
-            if(minecraftClient.currentScreen instanceof WaitForNextLayerScreen) {
-                ((WaitForNextLayerScreen)minecraftClient.currentScreen).openSelection();
+            if(minecraftClient.screen instanceof WaitForNextLayerScreen) {
+                ((WaitForNextLayerScreen)minecraftClient.screen).openSelection();
             }
         });
     }
 
     @Environment(EnvType.CLIENT)
-    private static CompletableFuture<PacketByteBuf> handleHandshake(MinecraftClient minecraftClient, ClientLoginNetworkHandler clientLoginNetworkHandler, PacketByteBuf packetByteBuf, Consumer<GenericFutureListener<? extends Future<? super Void>>> genericFutureListenerConsumer) {
-        PacketByteBuf buf = PacketByteBufs.create();
+    private static CompletableFuture<FriendlyByteBuf> handleHandshake(Minecraft minecraftClient, ClientHandshakePacketListenerImpl clientLoginNetworkHandler, FriendlyByteBuf packetByteBuf, Consumer<GenericFutureListener<? extends Future<? super Void>>> genericFutureListenerConsumer) {
+        FriendlyByteBuf buf = PacketByteBufs.create();
         buf.writeInt(Origins.SEMVER.length);
         for(int i = 0; i < Origins.SEMVER.length; i++) {
             buf.writeInt(Origins.SEMVER[i]);
@@ -72,7 +71,7 @@ public class ModPacketsS2C {
     }
 
     @Environment(EnvType.CLIENT)
-    private static void openOriginScreen(MinecraftClient minecraftClient, ClientPlayNetworkHandler clientPlayNetworkHandler, PacketByteBuf packetByteBuf, PacketSender packetSender) {
+    private static void openOriginScreen(Minecraft minecraftClient, ClientPacketListener clientPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
         boolean showDirtBackground = packetByteBuf.readBoolean();
         minecraftClient.execute(() -> {
             ArrayList<OriginLayer> layers = new ArrayList<>();
@@ -88,12 +87,12 @@ public class ModPacketsS2C {
     }
 
     @Environment(EnvType.CLIENT)
-    private static void receiveOriginList(MinecraftClient minecraftClient, ClientPlayNetworkHandler clientPlayNetworkHandler, PacketByteBuf packetByteBuf, PacketSender packetSender) {
+    private static void receiveOriginList(Minecraft minecraftClient, ClientPacketListener clientPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
         try {
-            Identifier[] ids = new Identifier[packetByteBuf.readInt()];
+            ResourceLocation[] ids = new ResourceLocation[packetByteBuf.readInt()];
             SerializableData.Instance[] origins = new SerializableData.Instance[ids.length];
             for(int i = 0; i < origins.length; i++) {
-                ids[i] = Identifier.tryParse(packetByteBuf.readString());
+                ids[i] = ResourceLocation.tryParse(packetByteBuf.readUtf());
                 origins[i] = Origin.DATA.read(packetByteBuf);
             }
             minecraftClient.execute(() -> {
@@ -109,7 +108,7 @@ public class ModPacketsS2C {
     }
 
     @Environment(EnvType.CLIENT)
-    private static void receiveLayerList(MinecraftClient minecraftClient, ClientPlayNetworkHandler clientPlayNetworkHandler, PacketByteBuf packetByteBuf, PacketSender packetSender) {
+    private static void receiveLayerList(Minecraft minecraftClient, ClientPacketListener clientPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
         try {
             int layerCount = packetByteBuf.readInt();
             OriginLayer[] layers = new OriginLayer[layerCount];
@@ -129,12 +128,12 @@ public class ModPacketsS2C {
     }
 
     @Environment(EnvType.CLIENT)
-    private static void receiveBadgeList(MinecraftClient minecraftClient, ClientPlayNetworkHandler clientPlayNetworkHandler, PacketByteBuf packetByteBuf, PacketSender packetSender) {
+    private static void receiveBadgeList(Minecraft minecraftClient, ClientPacketListener clientPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
         try {
-            HashMap<Identifier, List<Badge>> badges = new HashMap<>();
+            HashMap<ResourceLocation, List<Badge>> badges = new HashMap<>();
             int count = packetByteBuf.readInt();
             for(int i = 0; i < count; i++) {
-                Identifier powerId = packetByteBuf.readIdentifier();
+                ResourceLocation powerId = packetByteBuf.readResourceLocation();
                 List<Badge> badgeList = new LinkedList<>();
                 int badgeCount = packetByteBuf.readInt();
                 for(int j = 0; j < badgeCount; j++) {
@@ -145,7 +144,7 @@ public class ModPacketsS2C {
             }
             minecraftClient.execute(() -> {
                 BadgeManager.clear();
-                for(Map.Entry<Identifier, List<Badge>> badgeEntry : badges.entrySet()) {
+                for(Map.Entry<ResourceLocation, List<Badge>> badgeEntry : badges.entrySet()) {
                     for(Badge badge : badgeEntry.getValue()) {
                         BadgeManager.putPowerBadge(badgeEntry.getKey(), badge);
                     }

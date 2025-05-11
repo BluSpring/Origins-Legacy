@@ -3,19 +3,18 @@ package io.github.apace100.origins.badge;
 import io.github.apace100.apoli.power.*;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.origins.util.PowerKeyManager;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.tooltip.OrderedTextTooltipComponent;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
 import java.util.LinkedList;
 import java.util.List;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 
-public record KeybindBadge(Identifier spriteId, String text) implements Badge {
+public record KeybindBadge(ResourceLocation spriteId, String text) implements Badge {
 
     public KeybindBadge(SerializableData.Instance instance) {
         this(instance.getId("sprite"), instance.get("text"));
@@ -26,24 +25,24 @@ public record KeybindBadge(Identifier spriteId, String text) implements Badge {
         return true;
     }
 
-    public static void addLines(List<TooltipComponent> tooltips, Text text, TextRenderer textRenderer, int widthLimit) {
-        if(textRenderer.getWidth(text) > widthLimit) {
-            for(OrderedText orderedText : textRenderer.wrapLines(text, widthLimit)) {
-                tooltips.add(new OrderedTextTooltipComponent(orderedText));
+    public static void addLines(List<ClientTooltipComponent> tooltips, Component text, Font textRenderer, int widthLimit) {
+        if(textRenderer.width(text) > widthLimit) {
+            for(FormattedCharSequence orderedText : textRenderer.split(text, widthLimit)) {
+                tooltips.add(new ClientTextTooltip(orderedText));
             }
         } else {
-            tooltips.add(new OrderedTextTooltipComponent(text.asOrderedText()));
+            tooltips.add(new ClientTextTooltip(text.getVisualOrderText()));
         }
     }
 
     @Override
-    public List<TooltipComponent> getTooltipComponents(PowerType<?> powerType, int widthLimit, float time, TextRenderer textRenderer) {
-        List<TooltipComponent> tooltips = new LinkedList<>();
-        Text keyText;
-        keyText = ((MutableText)Text.of("["))
-            .append(KeyBinding.getLocalizedName(PowerKeyManager.getKeyIdentifier(powerType.getIdentifier())).get())
-            .append(Text.of("]"));
-        addLines(tooltips, Text.translatable(text, keyText), textRenderer, widthLimit);
+    public List<ClientTooltipComponent> getTooltipComponents(PowerType<?> powerType, int widthLimit, float time, Font textRenderer) {
+        List<ClientTooltipComponent> tooltips = new LinkedList<>();
+        Component keyText;
+        keyText = ((MutableComponent)Component.nullToEmpty("["))
+            .append(KeyMapping.createNameSupplier(PowerKeyManager.getKeyIdentifier(powerType.getIdentifier())).get())
+            .append(Component.nullToEmpty("]"));
+        addLines(tooltips, Component.translatable(text, keyText), textRenderer, widthLimit);
         return tooltips;
     }
 

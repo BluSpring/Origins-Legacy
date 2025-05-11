@@ -9,12 +9,11 @@ import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 public class OriginLayer implements Comparable<OriginLayer> {
 
     private int order;
-    private Identifier identifier;
+    private ResourceLocation identifier;
     private List<ConditionedOrigin> conditionedOrigins;
     private boolean enabled = false;
 
@@ -35,9 +34,9 @@ public class OriginLayer implements Comparable<OriginLayer> {
 
     private boolean isRandomAllowed = false;
     private boolean doesRandomAllowUnchoosable = false;
-    private List<Identifier> originsExcludedFromRandom = null;
+    private List<ResourceLocation> originsExcludedFromRandom = null;
 
-    private Identifier defaultOrigin = null;
+    private ResourceLocation defaultOrigin = null;
     private boolean autoChooseIfNoChoice = false;
 
     private boolean hidden = false;
@@ -91,7 +90,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
         return missingOriginDescriptionTranslationKey;
     }
 
-    public Identifier getIdentifier() {
+    public ResourceLocation getIdentifier() {
         return identifier;
     }
 
@@ -103,7 +102,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
         return defaultOrigin != null;
     }
 
-    public Identifier getDefaultOrigin() {
+    public ResourceLocation getDefaultOrigin() {
         return defaultOrigin;
     }
 
@@ -111,15 +110,15 @@ public class OriginLayer implements Comparable<OriginLayer> {
         return autoChooseIfNoChoice;
     }
 
-    public List<Identifier> getOrigins() {
+    public List<ResourceLocation> getOrigins() {
         return conditionedOrigins.stream().flatMap(co -> co.getOrigins().stream()).filter(OriginRegistry::contains).collect(Collectors.toList());
     }
 
-    public List<Identifier> getOrigins(PlayerEntity playerEntity) {
+    public List<ResourceLocation> getOrigins(Player playerEntity) {
         return conditionedOrigins.stream().filter(co -> co.isConditionFulfilled(playerEntity)).flatMap(co -> co.getOrigins().stream()).filter(OriginRegistry::contains).collect(Collectors.toList());
     }
 
-    public int getOriginOptionCount(PlayerEntity playerEntity) {
+    public int getOriginOptionCount(Player playerEntity) {
         long choosableOrigins = getOrigins(playerEntity).stream().map(OriginRegistry::get).filter(Origin::isChoosable).count();
         if(isRandomAllowed && getRandomOrigins(playerEntity).size() > 0) {
             choosableOrigins++;
@@ -131,7 +130,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
         return conditionedOrigins.stream().anyMatch(co -> co.getOrigins().stream().anyMatch(o -> o.equals(origin.getIdentifier())));
     }
 
-    public boolean contains(Origin origin, PlayerEntity playerEntity) {
+    public boolean contains(Origin origin, Player playerEntity) {
         return conditionedOrigins.stream().filter(co -> co.isConditionFulfilled(playerEntity)).anyMatch(co -> co.getOrigins().stream().anyMatch(o -> o.equals(origin.getIdentifier())));
     }
 
@@ -143,7 +142,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
         return hidden;
     }
 
-    public List<Identifier> getRandomOrigins(PlayerEntity playerEntity) {
+    public List<ResourceLocation> getRandomOrigins(Player playerEntity) {
         return conditionedOrigins.stream().filter(co -> co.isConditionFulfilled(playerEntity)).flatMap(co -> co.getOrigins().stream()).filter(OriginRegistry::contains).filter(o -> !originsExcludedFromRandom.contains(o)).filter(id -> doesRandomAllowUnchoosable || OriginRegistry.get(id).isChoosable()).collect(Collectors.toList());
     }
 
@@ -159,47 +158,47 @@ public class OriginLayer implements Comparable<OriginLayer> {
             originArray.forEach(je -> this.conditionedOrigins.add(ConditionedOrigin.read(je)));
         }
         if(json.has("name")) {
-            this.nameTranslationKey = JsonHelper.getString(json, "name", "");
+            this.nameTranslationKey = GsonHelper.getAsString(json, "name", "");
         }
         if(json.has("gui_title")) {
             JsonObject guiTitleObj = json.getAsJsonObject("gui_title");
             if(guiTitleObj.has("view_origin")) {
-                this.titleViewOriginTranslationKey = JsonHelper.getString(guiTitleObj, "view_origin", "");
+                this.titleViewOriginTranslationKey = GsonHelper.getAsString(guiTitleObj, "view_origin", "");
                 this.overrideViewOriginTitle = true;
             }
             if(guiTitleObj.has("choose_origin")) {
-                this.titleChooseOriginTranslationKey = JsonHelper.getString(guiTitleObj, "choose_origin", "");
+                this.titleChooseOriginTranslationKey = GsonHelper.getAsString(guiTitleObj, "choose_origin", "");
                 this.overrideChooseOriginTitle = true;
             }
         }
         if(json.has("missing_name")) {
-            this.missingOriginNameTranslationKey = JsonHelper.getString(json, "missing_name", "");
+            this.missingOriginNameTranslationKey = GsonHelper.getAsString(json, "missing_name", "");
         }
         if(json.has("missing_description")) {
-            this.missingOriginDescriptionTranslationKey = JsonHelper.getString(json, "missing_description", "");
+            this.missingOriginDescriptionTranslationKey = GsonHelper.getAsString(json, "missing_description", "");
         }
         if(json.has("allow_random")) {
-            this.isRandomAllowed = JsonHelper.getBoolean(json, "allow_random");
+            this.isRandomAllowed = GsonHelper.getAsBoolean(json, "allow_random");
         }
         if(json.has("allow_random_unchoosable")) {
-            this.doesRandomAllowUnchoosable = JsonHelper.getBoolean(json, "allow_random_unchoosable");
+            this.doesRandomAllowUnchoosable = GsonHelper.getAsBoolean(json, "allow_random_unchoosable");
         }
         if(json.has("exclude_random") && json.get("exclude_random").isJsonArray()) {
-            boolean replaceExclude = JsonHelper.getBoolean(json, "replace_exclude_random", false);
+            boolean replaceExclude = GsonHelper.getAsBoolean(json, "replace_exclude_random", false);
             if(replaceExclude) {
                 originsExcludedFromRandom.clear();
             }
             JsonArray excludeRandomArray = json.getAsJsonArray("exclude_random");
-            excludeRandomArray.forEach(je -> originsExcludedFromRandom.add(Identifier.tryParse(je.getAsString())));
+            excludeRandomArray.forEach(je -> originsExcludedFromRandom.add(ResourceLocation.tryParse(je.getAsString())));
         }
         if(json.has("default_origin")) {
-            this.defaultOrigin = new Identifier(JsonHelper.getString(json, "default_origin"));
+            this.defaultOrigin = new ResourceLocation(GsonHelper.getAsString(json, "default_origin"));
         }
         if(json.has("auto_choose")) {
-            this.autoChooseIfNoChoice = JsonHelper.getBoolean(json, "auto_choose");
+            this.autoChooseIfNoChoice = GsonHelper.getAsBoolean(json, "auto_choose");
         }
         if(json.has("hidden")) {
-            this.hidden = JsonHelper.getBoolean(json, "hidden");
+            this.hidden = GsonHelper.getAsBoolean(json, "hidden");
         }
     }
 
@@ -224,26 +223,26 @@ public class OriginLayer implements Comparable<OriginLayer> {
         return Integer.compare(order, o.order);
     }
 
-    public void write(PacketByteBuf buffer) {
-        buffer.writeString(identifier.toString());
+    public void write(FriendlyByteBuf buffer) {
+        buffer.writeUtf(identifier.toString());
         buffer.writeInt(order);
         buffer.writeBoolean(enabled);
         buffer.writeInt(conditionedOrigins.size());
         conditionedOrigins.forEach(co -> co.write(buffer));
-        buffer.writeString(getOrCreateTranslationKey());
-        buffer.writeString(getTitleViewOriginTranslationKey());
-        buffer.writeString(getTitleChooseOriginTranslationKey());
-        buffer.writeString(getMissingOriginNameTranslationKey());
-        buffer.writeString(getMissingOriginDescriptionTranslationKey());
+        buffer.writeUtf(getOrCreateTranslationKey());
+        buffer.writeUtf(getTitleViewOriginTranslationKey());
+        buffer.writeUtf(getTitleChooseOriginTranslationKey());
+        buffer.writeUtf(getMissingOriginNameTranslationKey());
+        buffer.writeUtf(getMissingOriginDescriptionTranslationKey());
         buffer.writeBoolean(isRandomAllowed());
         if(isRandomAllowed()) {
             buffer.writeBoolean(doesRandomAllowUnchoosable);
             buffer.writeInt(originsExcludedFromRandom.size());
-            originsExcludedFromRandom.forEach(buffer::writeIdentifier);
+            originsExcludedFromRandom.forEach(buffer::writeResourceLocation);
         }
         buffer.writeBoolean(hasDefaultOrigin());
         if(hasDefaultOrigin()) {
-            buffer.writeIdentifier(defaultOrigin);
+            buffer.writeResourceLocation(defaultOrigin);
         }
         buffer.writeBoolean(autoChooseIfNoChoice);
         buffer.writeBoolean(hidden);
@@ -252,9 +251,9 @@ public class OriginLayer implements Comparable<OriginLayer> {
     }
 
     @Environment(EnvType.CLIENT)
-    public static OriginLayer read(PacketByteBuf buffer) {
+    public static OriginLayer read(FriendlyByteBuf buffer) {
         OriginLayer layer = new OriginLayer();
-        layer.identifier = Identifier.tryParse(buffer.readString());
+        layer.identifier = ResourceLocation.tryParse(buffer.readUtf());
         layer.order = buffer.readInt();
         layer.enabled = buffer.readBoolean();
         int conditionedOriginCount = buffer.readInt();
@@ -262,22 +261,22 @@ public class OriginLayer implements Comparable<OriginLayer> {
         for(int i = 0; i < conditionedOriginCount; i++) {
             layer.conditionedOrigins.add(ConditionedOrigin.read(buffer));
         }
-        layer.nameTranslationKey = buffer.readString();
-        layer.titleViewOriginTranslationKey = buffer.readString();
-        layer.titleChooseOriginTranslationKey = buffer.readString();
-        layer.missingOriginNameTranslationKey = buffer.readString();
-        layer.missingOriginDescriptionTranslationKey = buffer.readString();
+        layer.nameTranslationKey = buffer.readUtf();
+        layer.titleViewOriginTranslationKey = buffer.readUtf();
+        layer.titleChooseOriginTranslationKey = buffer.readUtf();
+        layer.missingOriginNameTranslationKey = buffer.readUtf();
+        layer.missingOriginDescriptionTranslationKey = buffer.readUtf();
         layer.isRandomAllowed = buffer.readBoolean();
         if(layer.isRandomAllowed) {
             layer.doesRandomAllowUnchoosable = buffer.readBoolean();
             int excludedSize = buffer.readInt();
             layer.originsExcludedFromRandom = new LinkedList<>();
             for(int i = 0; i < excludedSize; i++) {
-                layer.originsExcludedFromRandom.add(buffer.readIdentifier());
+                layer.originsExcludedFromRandom.add(buffer.readResourceLocation());
             }
         }
         if(buffer.readBoolean()) {
-            layer.defaultOrigin = buffer.readIdentifier();
+            layer.defaultOrigin = buffer.readResourceLocation();
         }
         layer.autoChooseIfNoChoice = buffer.readBoolean();
         layer.hidden = buffer.readBoolean();
@@ -286,87 +285,87 @@ public class OriginLayer implements Comparable<OriginLayer> {
         return layer;
     }
 
-    public static OriginLayer fromJson(Identifier id, JsonObject json) {
-        int order = JsonHelper.getInt(json, "order", OriginLayers.size());
+    public static OriginLayer fromJson(ResourceLocation id, JsonObject json) {
+        int order = GsonHelper.getAsInt(json, "order", OriginLayers.size());
         if(!json.has("origins") || !json.get("origins").isJsonArray()) {
             throw new JsonParseException("Origin layer JSON requires \"origins\" array of origin IDs to include in the layer.");
         }
         JsonArray originArray = json.getAsJsonArray("origins");
         List<ConditionedOrigin> list = new ArrayList<>(originArray.size());
         originArray.forEach(je -> list.add(ConditionedOrigin.read(je)));
-        boolean enabled = JsonHelper.getBoolean(json, "enabled", true);
+        boolean enabled = GsonHelper.getAsBoolean(json, "enabled", true);
         OriginLayer layer = new OriginLayer();
         layer.order = order;
         layer.conditionedOrigins = list;
         layer.enabled = enabled;
         layer.identifier = id;
-        layer.nameTranslationKey = JsonHelper.getString(json, "name", "");
+        layer.nameTranslationKey = GsonHelper.getAsString(json, "name", "");
         if(json.has("gui_title") && json.get("gui_title").isJsonObject()) {
             JsonObject guiTitleObj = json.getAsJsonObject("gui_title");
             if(guiTitleObj.has("view_origin")) {
-                layer.titleViewOriginTranslationKey = JsonHelper.getString(guiTitleObj, "view_origin", "");
+                layer.titleViewOriginTranslationKey = GsonHelper.getAsString(guiTitleObj, "view_origin", "");
                 layer.overrideViewOriginTitle = true;
             }
             if(guiTitleObj.has("choose_origin")) {
-                layer.titleChooseOriginTranslationKey = JsonHelper.getString(guiTitleObj, "choose_origin", "");
+                layer.titleChooseOriginTranslationKey = GsonHelper.getAsString(guiTitleObj, "choose_origin", "");
                 layer.overrideChooseOriginTitle = true;
             }
         }
-        layer.missingOriginNameTranslationKey = JsonHelper.getString(json, "missing_name", "");
-        layer.missingOriginDescriptionTranslationKey = JsonHelper.getString(json, "missing_description", "");
-        layer.isRandomAllowed = JsonHelper.getBoolean(json, "allow_random", false);
-        layer.doesRandomAllowUnchoosable = JsonHelper.getBoolean(json, "allow_random_unchoosable", false);
+        layer.missingOriginNameTranslationKey = GsonHelper.getAsString(json, "missing_name", "");
+        layer.missingOriginDescriptionTranslationKey = GsonHelper.getAsString(json, "missing_description", "");
+        layer.isRandomAllowed = GsonHelper.getAsBoolean(json, "allow_random", false);
+        layer.doesRandomAllowUnchoosable = GsonHelper.getAsBoolean(json, "allow_random_unchoosable", false);
         layer.originsExcludedFromRandom = new LinkedList<>();
         if(json.has("exclude_random") && json.get("exclude_random").isJsonArray()) {
             JsonArray excludeRandomArray = json.getAsJsonArray("exclude_random");
-            excludeRandomArray.forEach(je -> layer.originsExcludedFromRandom.add(Identifier.tryParse(je.getAsString())));
+            excludeRandomArray.forEach(je -> layer.originsExcludedFromRandom.add(ResourceLocation.tryParse(je.getAsString())));
         }
         if(json.has("default_origin")) {
-            layer.defaultOrigin = new Identifier(JsonHelper.getString(json, "default_origin"));
+            layer.defaultOrigin = new ResourceLocation(GsonHelper.getAsString(json, "default_origin"));
         }
-        layer.autoChooseIfNoChoice = JsonHelper.getBoolean(json, "auto_choose", false);
-        layer.hidden = JsonHelper.getBoolean(json, "hidden", false);
+        layer.autoChooseIfNoChoice = GsonHelper.getAsBoolean(json, "auto_choose", false);
+        layer.hidden = GsonHelper.getAsBoolean(json, "hidden", false);
         return layer;
     }
 
     public static class ConditionedOrigin {
         private final ConditionFactory<Entity>.Instance condition;
-        private final List<Identifier> origins;
+        private final List<ResourceLocation> origins;
 
-        public ConditionedOrigin(ConditionFactory<Entity>.Instance condition, List<Identifier> origins) {
+        public ConditionedOrigin(ConditionFactory<Entity>.Instance condition, List<ResourceLocation> origins) {
             this.condition = condition;
             this.origins = origins;
         }
 
-        public boolean isConditionFulfilled(PlayerEntity playerEntity) {
+        public boolean isConditionFulfilled(Player playerEntity) {
             return condition == null || condition.test(playerEntity);
         }
 
-        public List<Identifier> getOrigins() {
+        public List<ResourceLocation> getOrigins() {
             return origins;
         }
         private static final SerializableData conditionedOriginObjectData = new SerializableData()
             .add("condition", ApoliDataTypes.ENTITY_CONDITION)
             .add("origins", SerializableDataTypes.IDENTIFIERS);
 
-        public void write(PacketByteBuf buffer) {
+        public void write(FriendlyByteBuf buffer) {
             buffer.writeBoolean(condition != null);
             if(condition != null)
                 condition.write(buffer);
             buffer.writeInt(origins.size());
-            origins.forEach(buffer::writeIdentifier);
+            origins.forEach(buffer::writeResourceLocation);
         }
 
         @Environment(EnvType.CLIENT)
-        public static ConditionedOrigin read(PacketByteBuf buffer) {
+        public static ConditionedOrigin read(FriendlyByteBuf buffer) {
             ConditionFactory<Entity>.Instance condition = null;
             if(buffer.readBoolean()) {
                 condition = ConditionTypes.ENTITY.read(buffer);
             }
             int originCount = buffer.readInt();
-            List<Identifier> originList = new ArrayList<>(originCount);
+            List<ResourceLocation> originList = new ArrayList<>(originCount);
             for(int i = 0; i < originCount; i++) {
-                originList.add(buffer.readIdentifier());
+                originList.add(buffer.readResourceLocation());
             }
             return new ConditionedOrigin(condition, originList);
         }
@@ -376,12 +375,12 @@ public class OriginLayer implements Comparable<OriginLayer> {
             if(element.isJsonPrimitive()) {
                 JsonPrimitive elemPrimitive = element.getAsJsonPrimitive();
                 if(elemPrimitive.isString()) {
-                    return new ConditionedOrigin(null, Lists.newArrayList(Identifier.tryParse(elemPrimitive.getAsString())));
+                    return new ConditionedOrigin(null, Lists.newArrayList(ResourceLocation.tryParse(elemPrimitive.getAsString())));
                 }
                 throw new JsonParseException("Expected origin in layer to be either a string or an object.");
             } else if(element.isJsonObject()) {
                 SerializableData.Instance data = conditionedOriginObjectData.read(element.getAsJsonObject());
-                return new ConditionedOrigin((ConditionFactory<Entity>.Instance)data.get("condition"), (List<Identifier>)data.get("origins"));
+                return new ConditionedOrigin((ConditionFactory<Entity>.Instance)data.get("condition"), (List<ResourceLocation>)data.get("origins"));
             }
             throw new JsonParseException("Expected origin in layer to be either a string or an object.");
         }

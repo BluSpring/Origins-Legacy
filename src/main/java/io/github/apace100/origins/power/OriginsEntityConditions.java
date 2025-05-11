@@ -10,10 +10,10 @@ import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.registry.ModComponents;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 
 public class OriginsEntityConditions {
 
@@ -23,10 +23,10 @@ public class OriginsEntityConditions {
             .add("origin", SerializableDataTypes.IDENTIFIER)
             .add("layer", SerializableDataTypes.IDENTIFIER, null),
             (data, entity) -> {
-                if(entity instanceof PlayerEntity) {OriginComponent component = ModComponents.ORIGIN.get(entity);
-                    Identifier originId = data.getId("origin");
+                if(entity instanceof Player) {OriginComponent component = ModComponents.ORIGIN.get(entity);
+                    ResourceLocation originId = data.getId("origin");
                     if(data.isPresent("layer")) {
-                        Identifier layerId = data.getId("layer");
+                        ResourceLocation layerId = data.getId("layer");
                         OriginLayer layer = OriginLayers.getLayer(layerId);
                         if(layer == null) {
                             return false;

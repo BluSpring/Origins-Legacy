@@ -3,26 +3,26 @@ package io.github.apace100.origins.origin;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
 public class OriginUpgrade {
 
-    private final Identifier advancementCondition;
-    private final Identifier upgradeToOrigin;
+    private final ResourceLocation advancementCondition;
+    private final ResourceLocation upgradeToOrigin;
     private final String announcement;
 
-    public OriginUpgrade(Identifier advancementCondition, Identifier upgradeToOrigin, String announcement) {
+    public OriginUpgrade(ResourceLocation advancementCondition, ResourceLocation upgradeToOrigin, String announcement) {
         this.advancementCondition = advancementCondition;
         this.upgradeToOrigin = upgradeToOrigin;
         this.announcement = announcement;
     }
 
-    public Identifier getAdvancementCondition() {
+    public ResourceLocation getAdvancementCondition() {
         return advancementCondition;
     }
 
-    public Identifier getUpgradeToOrigin() {
+    public ResourceLocation getUpgradeToOrigin() {
         return upgradeToOrigin;
     }
 
@@ -30,16 +30,16 @@ public class OriginUpgrade {
         return announcement;
     }
 
-    public void write(PacketByteBuf buffer) {
-        buffer.writeIdentifier(advancementCondition);
-        buffer.writeIdentifier(upgradeToOrigin);
-        buffer.writeString(announcement);
+    public void write(FriendlyByteBuf buffer) {
+        buffer.writeResourceLocation(advancementCondition);
+        buffer.writeResourceLocation(upgradeToOrigin);
+        buffer.writeUtf(announcement);
     }
 
-    public static OriginUpgrade read(PacketByteBuf buffer) {
-        Identifier condition = buffer.readIdentifier();
-        Identifier origin = buffer.readIdentifier();
-        String announcement = buffer.readString(32767);
+    public static OriginUpgrade read(FriendlyByteBuf buffer) {
+        ResourceLocation condition = buffer.readResourceLocation();
+        ResourceLocation origin = buffer.readResourceLocation();
+        String announcement = buffer.readUtf(32767);
         return new OriginUpgrade(condition, origin, announcement);
     }
 
@@ -52,8 +52,8 @@ public class OriginUpgrade {
         JsonElement origin;
         if(json.has("condition") && (condition = json.get("condition")).isJsonPrimitive()
             && json.has("origin") && (origin = json.get("origin")).isJsonPrimitive()) {
-            Identifier conditionId = Identifier.tryParse(condition.getAsString());
-            Identifier originId = Identifier.tryParse(origin.getAsString());
+            ResourceLocation conditionId = ResourceLocation.tryParse(condition.getAsString());
+            ResourceLocation originId = ResourceLocation.tryParse(origin.getAsString());
             String announcement = "";
             if(json.has("announcement")) {
                 JsonElement anno = json.get("announcement");

@@ -9,8 +9,8 @@ import io.github.apace100.apoli.registry.ApoliRegistries;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import io.github.apace100.origins.Origins;
-import net.minecraft.entity.Entity;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.world.entity.Entity;
 
 @SuppressWarnings("unchecked")
 public class OriginsPowerTypes {

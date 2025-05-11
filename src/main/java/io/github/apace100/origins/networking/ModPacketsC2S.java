@@ -8,14 +8,13 @@ import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.registry.ModComponents;
 import net.fabricmc.fabric.api.networking.v1.*;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerLoginNetworkHandler;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.server.network.ServerLoginPacketListenerImpl;
 import java.util.List;
 import java.util.Random;
 
@@ -30,14 +29,14 @@ public class ModPacketsC2S {
         ServerPlayNetworking.registerGlobalReceiver(ModPackets.CHOOSE_RANDOM_ORIGIN, ModPacketsC2S::chooseRandomOrigin);
     }
 
-    private static void chooseOrigin(MinecraftServer minecraftServer, ServerPlayerEntity playerEntity, ServerPlayNetworkHandler serverPlayNetworkHandler, PacketByteBuf packetByteBuf, PacketSender packetSender) {
-        String originId = packetByteBuf.readString(32767);
-        String layerId = packetByteBuf.readString(32767);
+    private static void chooseOrigin(MinecraftServer minecraftServer, ServerPlayer playerEntity, ServerGamePacketListenerImpl serverPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
+        String originId = packetByteBuf.readUtf(32767);
+        String layerId = packetByteBuf.readUtf(32767);
         minecraftServer.execute(() -> {
             OriginComponent component = ModComponents.ORIGIN.get(playerEntity);
-            OriginLayer layer = OriginLayers.getLayer(Identifier.tryParse(layerId));
+            OriginLayer layer = OriginLayers.getLayer(ResourceLocation.tryParse(layerId));
             if(!component.hasAllOrigins() && !component.hasOrigin(layer)) {
-                Identifier id = Identifier.tryParse(originId);
+                ResourceLocation id = ResourceLocation.tryParse(originId);
                 if(id != null) {
                     Origin origin = OriginRegistry.get(id);
                     if(origin.isChoosable() && layer.contains(origin, playerEntity)) {
@@ -49,31 +48,31 @@ public class ModPacketsC2S {
                         if(component.hasAllOrigins() && !hadAllOrigins) {
                             OriginComponent.onChosen(playerEntity, hadOriginBefore);
                         }
-                        Origins.LOGGER.info("Player " + playerEntity.getDisplayName().getContent() + " chose Origin: " + originId + ", for layer: " + layerId);
+                        Origins.LOGGER.info("Player " + playerEntity.getDisplayName().getContents() + " chose Origin: " + originId + ", for layer: " + layerId);
                     } else {
-                        Origins.LOGGER.info("Player " + playerEntity.getDisplayName().getContent() + " tried to choose unchoosable Origin for layer " + layerId + ": " + originId + ".");
+                        Origins.LOGGER.info("Player " + playerEntity.getDisplayName().getContents() + " tried to choose unchoosable Origin for layer " + layerId + ": " + originId + ".");
                         component.setOrigin(layer, Origin.EMPTY);
                     }
                     confirmOrigin(playerEntity, layer, component.getOrigin(layer));
                     component.sync();
                 } else {
-                    Origins.LOGGER.warn("Player " + playerEntity.getDisplayName().getContent() + " chose unknown origin: " + originId);
+                    Origins.LOGGER.warn("Player " + playerEntity.getDisplayName().getContents() + " chose unknown origin: " + originId);
                 }
             } else {
-                Origins.LOGGER.warn("Player " + playerEntity.getDisplayName().getContent() + " tried to choose origin for layer " + layerId + " while having one already.");
+                Origins.LOGGER.warn("Player " + playerEntity.getDisplayName().getContents() + " tried to choose origin for layer " + layerId + " while having one already.");
             }
         });
     }
 
-    private static void chooseRandomOrigin(MinecraftServer minecraftServer, ServerPlayerEntity playerEntity, ServerPlayNetworkHandler serverPlayNetworkHandler, PacketByteBuf packetByteBuf, PacketSender packetSender) {
-        String layerId = packetByteBuf.readString(32767);
+    private static void chooseRandomOrigin(MinecraftServer minecraftServer, ServerPlayer playerEntity, ServerGamePacketListenerImpl serverPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
+        String layerId = packetByteBuf.readUtf(32767);
         minecraftServer.execute(() -> {
             OriginComponent component = ModComponents.ORIGIN.get(playerEntity);
-            OriginLayer layer = OriginLayers.getLayer(Identifier.tryParse(layerId));
+            OriginLayer layer = OriginLayers.getLayer(ResourceLocation.tryParse(layerId));
             if(!component.hasAllOrigins() && !component.hasOrigin(layer)) {
-                List<Identifier> randomOrigins = layer.getRandomOrigins(playerEntity);
+                List<ResourceLocation> randomOrigins = layer.getRandomOrigins(playerEntity);
                 if(layer.isRandomAllowed() && randomOrigins.size() > 0) {
-                    Identifier randomOrigin = randomOrigins.get(new Random().nextInt(randomOrigins.size()));
+                    ResourceLocation randomOrigin = randomOrigins.get(new Random().nextInt(randomOrigins.size()));
                     Origin origin = OriginRegistry.get(randomOrigin);
                     boolean hadOriginBefore = component.hadOriginBefore();
                     boolean hadAllOrigins = component.hasAllOrigins();
@@ -83,20 +82,20 @@ public class ModPacketsC2S {
                     if(component.hasAllOrigins() && !hadAllOrigins) {
                         OriginComponent.onChosen(playerEntity, hadOriginBefore);
                     }
-                    Origins.LOGGER.info("Player " + playerEntity.getDisplayName().getContent() + " was randomly assigned the following Origin: " + randomOrigin + ", for layer: " + layerId);
+                    Origins.LOGGER.info("Player " + playerEntity.getDisplayName().getContents() + " was randomly assigned the following Origin: " + randomOrigin + ", for layer: " + layerId);
                 } else {
-                    Origins.LOGGER.info("Player " + playerEntity.getDisplayName().getContent() + " tried to choose a random Origin for layer " + layerId + ", which is not allowed!");
+                    Origins.LOGGER.info("Player " + playerEntity.getDisplayName().getContents() + " tried to choose a random Origin for layer " + layerId + ", which is not allowed!");
                     component.setOrigin(layer, Origin.EMPTY);
                 }
                 confirmOrigin(playerEntity, layer, component.getOrigin(layer));
                 component.sync();
             } else {
-                Origins.LOGGER.warn("Player " + playerEntity.getDisplayName().getContent() + " tried to choose origin for layer " + layerId + " while having one already.");
+                Origins.LOGGER.warn("Player " + playerEntity.getDisplayName().getContents() + " tried to choose origin for layer " + layerId + " while having one already.");
             }
         });
     }
 
-    private static void handleHandshakeReply(MinecraftServer minecraftServer, ServerLoginNetworkHandler serverLoginNetworkHandler, boolean understood, PacketByteBuf packetByteBuf, ServerLoginNetworking.LoginSynchronizer loginSynchronizer, PacketSender packetSender) {
+    private static void handleHandshakeReply(MinecraftServer minecraftServer, ServerLoginPacketListenerImpl serverLoginNetworkHandler, boolean understood, FriendlyByteBuf packetByteBuf, ServerLoginNetworking.LoginSynchronizer loginSynchronizer, PacketSender packetSender) {
         if (understood) {
             int clientSemVerLength = packetByteBuf.readInt();
             int[] clientSemVer = new int[clientSemVerLength];
@@ -115,21 +114,21 @@ public class ModPacketsC2S {
                         clientVersionString.append(".");
                     }
                 }
-                serverLoginNetworkHandler.disconnect(Text.translatable("origins.gui.version_mismatch", Origins.VERSION, clientVersionString));
+                serverLoginNetworkHandler.disconnect(Component.translatable("origins.gui.version_mismatch", Origins.VERSION, clientVersionString));
             }
         } else {
-            serverLoginNetworkHandler.disconnect(Text.of("This server requires you to install the Origins mod (v" + Origins.VERSION + ") to play."));
+            serverLoginNetworkHandler.disconnect(Component.nullToEmpty("This server requires you to install the Origins mod (v" + Origins.VERSION + ") to play."));
         }
     }
 
-    private static void handshake(ServerLoginNetworkHandler serverLoginNetworkHandler, MinecraftServer minecraftServer, PacketSender packetSender, ServerLoginNetworking.LoginSynchronizer loginSynchronizer) {
+    private static void handshake(ServerLoginPacketListenerImpl serverLoginNetworkHandler, MinecraftServer minecraftServer, PacketSender packetSender, ServerLoginNetworking.LoginSynchronizer loginSynchronizer) {
         packetSender.sendPacket(ModPackets.HANDSHAKE, PacketByteBufs.empty());
     }
 
-    private static void confirmOrigin(ServerPlayerEntity player, OriginLayer layer, Origin origin) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeIdentifier(layer.getIdentifier());
-        buf.writeIdentifier(origin.getIdentifier());
+    private static void confirmOrigin(ServerPlayer player, OriginLayer layer, Origin origin) {
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        buf.writeResourceLocation(layer.getIdentifier());
+        buf.writeResourceLocation(origin.getIdentifier());
         ServerPlayNetworking.send(player, ModPackets.CONFIRM_ORIGIN, buf);
     }
 }

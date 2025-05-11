@@ -5,8 +5,7 @@ import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.origins.badge.Badge;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 
 /**
@@ -26,6 +25,6 @@ public interface AutoBadgeCallback {
         }
     );
 
-    void createAutoBadge(Identifier powerId, PowerType<?> powerType, List<Badge> badgeList);
+    void createAutoBadge(ResourceLocation powerId, PowerType<?> powerType, List<Badge> badgeList);
 
 }

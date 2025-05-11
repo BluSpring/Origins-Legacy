@@ -1,11 +1,13 @@
 package io.github.apace100.origins.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import io.github.apace100.origins.power.OriginsPowerTypes;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -13,18 +15,18 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(LivingEntity.class)
 public abstract class LikeWaterMixin extends Entity {
 
-    public LikeWaterMixin(EntityType<?> type, World world) {
+    public LikeWaterMixin(EntityType<?> type, Level world) {
         super(type, world);
     }
 
-    @Redirect(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;applyFluidMovingSpeed(DZLnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;"))
-    public Vec3d method_26317Proxy(LivingEntity entity, double d, boolean bl, Vec3d vec3d) {
-        Vec3d oldReturn = entity.applyFluidMovingSpeed(d, bl, vec3d);
+    @WrapOperation(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getFluidFallingAdjustedMovement(DZLnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;"))
+    public Vec3 method_26317Proxy(LivingEntity instance, double gravity, boolean isFalling, Vec3 deltaMovement, Operation<Vec3> original) {
+        Vec3 oldReturn = original.call(instance, gravity, isFalling, deltaMovement);
         if(OriginsPowerTypes.LIKE_WATER.isActive(this)) {
-            if (Math.abs(vec3d.y - d / 16.0D) < 0.025D) {
-                return new Vec3d(oldReturn.x, 0, oldReturn.z);
+            if (Math.abs(deltaMovement.y - gravity / 16.0D) < 0.025D) {
+                return new Vec3(oldReturn.x, 0, oldReturn.z);
             }
         }
-        return entity.applyFluidMovingSpeed(d, bl, vec3d);
+        return oldReturn;
     }
 }

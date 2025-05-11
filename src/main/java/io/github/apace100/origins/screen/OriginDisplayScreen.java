@@ -9,30 +9,29 @@ import io.github.apace100.origins.mixin.DrawContextAccessor;
 import io.github.apace100.origins.origin.Impact;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Language;
-
 import java.util.LinkedList;
 import java.util.List;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.ItemStack;
 
 public class OriginDisplayScreen extends Screen {
 
-    private static final Identifier WINDOW = new Identifier(Origins.MODID, "textures/gui/choose_origin.png");
+    private static final ResourceLocation WINDOW = new ResourceLocation(Origins.MODID, "textures/gui/choose_origin.png");
     private Origin origin;
     private OriginLayer layer;
     private boolean isOriginRandom;
-    private Text randomOriginText;
+    private Component randomOriginText;
 
     protected static final int windowWidth = 176;
     protected static final int windowHeight = 182;
@@ -46,7 +45,7 @@ public class OriginDisplayScreen extends Screen {
 
     private final LinkedList<RenderedBadge> renderedBadges = new LinkedList<>();
 
-    public OriginDisplayScreen(Text title, boolean showDirtBackground) {
+    public OriginDisplayScreen(Component title, boolean showDirtBackground) {
         super(title);
         this.showDirtBackground = showDirtBackground;
     }
@@ -59,7 +58,7 @@ public class OriginDisplayScreen extends Screen {
         this.time = 0;
     }
 
-    public void setRandomOriginText(Text text) {
+    public void setRandomOriginText(Component text) {
         this.randomOriginText = text;
     }
 
@@ -79,16 +78,16 @@ public class OriginDisplayScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(DrawContext context) {
+    public void renderBackground(GuiGraphics context) {
         if(showDirtBackground) {
-            super.renderBackgroundTexture(context);
+            super.renderDirtBackground(context);
         } else {
             super.renderBackground(context);
         }
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         renderedBadges.clear();
         this.time += delta;
         this.renderBackground(context);
@@ -100,11 +99,11 @@ public class OriginDisplayScreen extends Screen {
         }
     }
 
-    private void renderScrollbar(DrawContext context, int mouseX, int mouseY) {
+    private void renderScrollbar(GuiGraphics context, int mouseX, int mouseY) {
         if(!canScroll()) {
             return;
         }
-        context.drawTexture(WINDOW, guiLeft + 155, guiTop + 35, 188, 24, 8, 134);
+        context.blit(WINDOW, guiLeft + 155, guiTop + 35, 188, 24, 8, 134);
         int scrollbarY = 36;
         int maxScrollbarOffset = 141;
         int u = 176;
@@ -117,7 +116,7 @@ public class OriginDisplayScreen extends Screen {
                 u += 6;
             }
         }
-        context.drawTexture(WINDOW, guiLeft + 156, guiTop + scrollbarY, u, 24, 6, 27);
+        context.blit(WINDOW, guiLeft + 156, guiTop + scrollbarY, u, 24, 6, 27);
     }
 
     private boolean scrolling = false;
@@ -165,7 +164,7 @@ public class OriginDisplayScreen extends Screen {
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
-    private void renderBadgeTooltip(DrawContext context, int mouseX, int mouseY) {
+    private void renderBadgeTooltip(GuiGraphics context, int mouseX, int mouseY) {
         for(RenderedBadge rb : renderedBadges) {
             if(mouseX >= rb.x &&
                mouseX < rb.x + 9 &&
@@ -173,16 +172,16 @@ public class OriginDisplayScreen extends Screen {
                mouseY < rb.y + 9 &&
                rb.hasTooltip()) {
                 int widthLimit = width - mouseX - 24;
-                ((DrawContextAccessor)context).invokeDrawTooltip(textRenderer, rb.getTooltipComponents(textRenderer, widthLimit), mouseX, mouseY, HoveredTooltipPositioner.INSTANCE);
+                ((DrawContextAccessor)context).invokeRenderTooltipInternal(font, rb.getTooltipComponents(font, widthLimit), mouseX, mouseY, DefaultTooltipPositioner.INSTANCE);
             }
         }
     }
 
-    protected Text getTitleText() {
-        return Text.of("Origins");
+    protected Component getTitleText() {
+        return Component.nullToEmpty("Origins");
     }
 
-    private void renderOriginWindow(DrawContext context, int mouseX, int mouseY) {
+    private void renderOriginWindow(GuiGraphics context, int mouseX, int mouseY) {
         RenderSystem.enableBlend();
         renderWindowBackground(context, 16, 0);
         if(origin != null) {
@@ -190,52 +189,52 @@ public class OriginDisplayScreen extends Screen {
             this.renderOriginContent(context, mouseX, mouseY);
             //context.disableScissor();
         }
-        context.drawTexture(WINDOW, guiLeft, guiTop, 1, 0, 0, windowWidth, windowHeight, 256, 256);
+        context.blit(WINDOW, guiLeft, guiTop, 1, 0, 0, windowWidth, windowHeight, 256, 256);
         if(origin != null) {
-            context.getMatrices().push();
-            context.getMatrices().translate(0, 0, 5);
+            context.pose().pushPose();
+            context.pose().translate(0, 0, 5);
             renderOriginName(context);
             RenderSystem.setShaderTexture(0, WINDOW);
             this.renderOriginImpact(context, mouseX, mouseY);
-            context.getMatrices().pop();
-            Text title = getTitleText();
-            context.drawCenteredTextWithShadow(this.textRenderer, title.getString(), width / 2, guiTop - 15, 0xFFFFFF);
+            context.pose().popPose();
+            Component title = getTitleText();
+            context.drawCenteredString(this.font, title.getString(), width / 2, guiTop - 15, 0xFFFFFF);
         }
         RenderSystem.disableBlend();
     }
 
-    private void renderOriginImpact(DrawContext context, int mouseX, int mouseY) {
+    private void renderOriginImpact(GuiGraphics context, int mouseX, int mouseY) {
         Impact impact = getCurrentOrigin().getImpact();
         int impactValue = impact.getImpactValue();
         int wOffset = impactValue * 8;
         for(int i = 0; i < 3; i++) {
             if(i < impactValue) {
-                context.drawTexture(WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth + wOffset, 16, 8, 8);
+                context.blit(WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth + wOffset, 16, 8, 8);
             } else {
-                context.drawTexture(WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth, 16, 8, 8);
+                context.blit(WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth, 16, 8, 8);
             }
         }
         if(mouseX >= guiLeft + 128 && mouseX <= guiLeft + 158
             && mouseY >= guiTop + 19 && mouseY <= guiTop + 27) {
-            MutableText ttc = Text.translatable(Origins.MODID + ".gui.impact.impact").append(": ").append(impact.getTextComponent());
-            context.drawTooltip(this.textRenderer, ttc, mouseX, mouseY);
+            MutableComponent ttc = Component.translatable(Origins.MODID + ".gui.impact.impact").append(": ").append(impact.getTextComponent());
+            context.renderTooltip(this.font, ttc, mouseX, mouseY);
         }
     }
 
-    private void renderOriginName(DrawContext context) {
-        StringVisitable originName = textRenderer.trimToWidth(getCurrentOrigin().getName(), windowWidth - 36);
-        context.drawTextWithShadow(textRenderer, originName.getString(), guiLeft + 39, guiTop + 19, 0xFFFFFF);
+    private void renderOriginName(GuiGraphics context) {
+        FormattedText originName = font.substrByWidth(getCurrentOrigin().getName(), windowWidth - 36);
+        context.drawString(font, originName.getString(), guiLeft + 39, guiTop + 19, 0xFFFFFF);
         ItemStack is = getCurrentOrigin().getDisplayItem();
-        context.drawItem(is, guiLeft + 15, guiTop + 15);
+        context.renderItem(is, guiLeft + 15, guiTop + 15);
     }
 
-    private void renderWindowBackground(DrawContext context, int offsetYStart, int offsetYEnd) {
+    private void renderWindowBackground(GuiGraphics context, int offsetYStart, int offsetYEnd) {
         int border = 13;
         int endX = guiLeft + windowWidth - border;
         int endY = guiTop + windowHeight - border;
         for(int x = guiLeft; x < endX; x += 16) {
             for(int y = guiTop + offsetYStart; y < endY + offsetYEnd; y += 16) {
-                context.drawTexture(WINDOW, x, y, windowWidth, 0, Math.max(16, endX - x), Math.max(16, endY + offsetYEnd - y));
+                context.blit(WINDOW, x, y, windowWidth, 0, Math.max(16, endX - x), Math.max(16, endY + offsetYEnd - y));
             }
         }
     }
@@ -248,7 +247,7 @@ public class OriginDisplayScreen extends Screen {
         return retValue;
     }
 
-    private void renderOriginContent(DrawContext context, int mouseX, int mouseY) {
+    private void renderOriginContent(GuiGraphics context, int mouseX, int mouseY) {
 
         int textWidth = windowWidth - 48;
         // Without this code, the text may not cover the whole width of the window
@@ -266,21 +265,21 @@ public class OriginDisplayScreen extends Screen {
         int endY = y - 72 + windowHeight;
         y -= scrollPos;
 
-        Text orgDesc = origin.getDescription();
-        List<OrderedText> descLines = textRenderer.wrapLines(orgDesc, textWidth);
-        for(OrderedText line : descLines) {
+        Component orgDesc = origin.getDescription();
+        List<FormattedCharSequence> descLines = font.split(orgDesc, textWidth);
+        for(FormattedCharSequence line : descLines) {
             if(y >= startY - 18 && y <= endY + 12) {
-                context.drawText(textRenderer, line, x + 2, y - 6, 0xCCCCCC, false);
+                context.drawString(font, line, x + 2, y - 6, 0xCCCCCC, false);
             }
             y += 12;
         }
 
         if(isOriginRandom) {
-            List<OrderedText> drawLines = textRenderer.wrapLines(randomOriginText, textWidth);
-            for(OrderedText line : drawLines) {
+            List<FormattedCharSequence> drawLines = font.split(randomOriginText, textWidth);
+            for(FormattedCharSequence line : drawLines) {
                 y += 12;
                 if(y >= startY - 24 && y <= endY + 12) {
-                    context.drawText(textRenderer, line, x + 2, y, 0xCCCCCC, false);
+                    context.drawString(font, line, x + 2, y, 0xCCCCCC, false);
                 }
             }
             y += 14;
@@ -289,26 +288,26 @@ public class OriginDisplayScreen extends Screen {
                 if(p.isHidden()) {
                     continue;
                 }
-                OrderedText name = Language.getInstance().reorder(textRenderer.trimToWidth(p.getName().formatted(Formatting.UNDERLINE), textWidth));
-                Text desc = p.getDescription();
-                List<OrderedText> drawLines = textRenderer.wrapLines(desc, textWidth);
+                FormattedCharSequence name = Language.getInstance().getVisualOrder(font.substrByWidth(p.getName().withStyle(ChatFormatting.UNDERLINE), textWidth));
+                Component desc = p.getDescription();
+                List<FormattedCharSequence> drawLines = font.split(desc, textWidth);
                 if(y >= startY - 24 && y <= endY + 12) {
-                    context.drawText(textRenderer, name, x, y, 0xFFFFFF, false);
-                    int tw = textRenderer.getWidth(name);
+                    context.drawString(font, name, x, y, 0xFFFFFF, false);
+                    int tw = font.width(name);
                     List<Badge> badges = BadgeManager.getPowerBadges(p.getIdentifier());
                     int xStart = x + tw + 4;
                     int bi = 0;
                     for(Badge badge : badges) {
                         RenderedBadge renderedBadge = new RenderedBadge(p, badge,xStart + 10 * bi, y - 1);
                         renderedBadges.add(renderedBadge);
-                        context.drawTexture(badge.spriteId(), xStart + 10 * bi, y - 1, 0, 0, 9, 9, 9, 9);
+                        context.blit(badge.spriteId(), xStart + 10 * bi, y - 1, 0, 0, 9, 9, 9, 9);
                         bi++;
                     }
                 }
-                for(OrderedText line : drawLines) {
+                for(FormattedCharSequence line : drawLines) {
                     y += 12;
                     if(y >= startY - 24 && y <= endY + 12) {
-                        context.drawText(textRenderer, line, x + 2, y, 0xCCCCCC, false);
+                        context.drawString(font, line, x + 2, y, 0xCCCCCC, false);
                     }
                 }
 
@@ -340,7 +339,7 @@ public class OriginDisplayScreen extends Screen {
             return badge.hasTooltip();
         }
 
-        public List<TooltipComponent> getTooltipComponents(TextRenderer textRenderer, int widthLimit) {
+        public List<ClientTooltipComponent> getTooltipComponents(Font textRenderer, int widthLimit) {
             return badge.getTooltipComponents(powerType, widthLimit, OriginDisplayScreen.this.time, textRenderer);
         }
 

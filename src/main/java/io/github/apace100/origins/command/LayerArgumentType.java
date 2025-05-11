@@ -9,30 +9,29 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
-import net.minecraft.command.CommandSource;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
-public class LayerArgumentType implements ArgumentType<Identifier> {
+public class LayerArgumentType implements ArgumentType<ResourceLocation> {
 
    public static final DynamicCommandExceptionType LAYER_NOT_FOUND = new DynamicCommandExceptionType(
-       o -> Text.translatable("commands.origin.layer_not_found", o)
+       o -> Component.translatable("commands.origin.layer_not_found", o)
    );
 
    public static LayerArgumentType layer() {
       return new LayerArgumentType();
    }
 
-   public Identifier parse(StringReader stringReader) throws CommandSyntaxException {
-      return Identifier.fromCommandInput(stringReader);
+   public ResourceLocation parse(StringReader stringReader) throws CommandSyntaxException {
+      return ResourceLocation.read(stringReader);
    }
 
-   public static OriginLayer getLayer(CommandContext<ServerCommandSource> context, String argumentName) throws CommandSyntaxException {
+   public static OriginLayer getLayer(CommandContext<CommandSourceStack> context, String argumentName) throws CommandSyntaxException {
 
-      Identifier id = context.getArgument(argumentName, Identifier.class);
+      ResourceLocation id = context.getArgument(argumentName, ResourceLocation.class);
 
       try {
          return OriginLayers.getLayer(id);
@@ -46,7 +45,7 @@ public class LayerArgumentType implements ArgumentType<Identifier> {
 
    @Override
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-      return CommandSource.suggestIdentifiers(OriginLayers.getLayers().stream().filter(OriginLayer::isEnabled).map(OriginLayer::getIdentifier), builder);
+      return SharedSuggestionProvider.suggestResource(OriginLayers.getLayers().stream().filter(OriginLayer::isEnabled).map(OriginLayer::getIdentifier), builder);
    }
 
 }

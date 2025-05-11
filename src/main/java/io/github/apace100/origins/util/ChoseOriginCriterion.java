@@ -4,40 +4,40 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.origin.Origin;
-import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.advancement.criterion.AbstractCriterionConditions;
-import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
-import net.minecraft.predicate.entity.AdvancementEntityPredicateSerializer;
-import net.minecraft.predicate.entity.LootContextPredicate;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
+import net.minecraft.advancements.critereon.ContextAwarePredicate;
+import net.minecraft.advancements.critereon.DeserializationContext;
+import net.minecraft.advancements.critereon.SerializationContext;
+import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.GsonHelper;
 
-public class ChoseOriginCriterion extends AbstractCriterion<ChoseOriginCriterion.Conditions> {
+public class ChoseOriginCriterion extends SimpleCriterionTrigger<ChoseOriginCriterion.Conditions> {
 
     public static ChoseOriginCriterion INSTANCE = new ChoseOriginCriterion();
 
-    private static final Identifier ID = new Identifier(Origins.MODID, "chose_origin");
+    private static final ResourceLocation ID = new ResourceLocation(Origins.MODID, "chose_origin");
 
     @Override
-    protected Conditions conditionsFromJson(JsonObject obj, LootContextPredicate playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
-        Identifier id = Identifier.tryParse(JsonHelper.getString(obj, "origin"));
+    protected Conditions createInstance(JsonObject obj, ContextAwarePredicate playerPredicate, DeserializationContext predicateDeserializer) {
+        ResourceLocation id = ResourceLocation.tryParse(GsonHelper.getAsString(obj, "origin"));
         return new Conditions(playerPredicate, id);
     }
 
-    public void trigger(ServerPlayerEntity player, Origin origin) {
+    public void trigger(ServerPlayer player, Origin origin) {
         this.trigger(player, (conditions -> conditions.matches(origin)));
     }
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return ID;
     }
 
-    public static class Conditions extends AbstractCriterionConditions {
-        private final Identifier originId;
+    public static class Conditions extends AbstractCriterionTriggerInstance {
+        private final ResourceLocation originId;
 
-        public Conditions(LootContextPredicate player, Identifier originId) {
+        public Conditions(ContextAwarePredicate player, ResourceLocation originId) {
             super(ChoseOriginCriterion.ID, player);
             this.originId = originId;
         }
@@ -46,8 +46,8 @@ public class ChoseOriginCriterion extends AbstractCriterion<ChoseOriginCriterion
             return origin.getIdentifier().equals(originId);
         }
 
-        public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {
-            JsonObject jsonObject = super.toJson(predicateSerializer);
+        public JsonObject serializeToJson(SerializationContext predicateSerializer) {
+            JsonObject jsonObject = super.serializeToJson(predicateSerializer);
             jsonObject.add("origin", new JsonPrimitive(originId.toString()));
             return jsonObject;
         }
