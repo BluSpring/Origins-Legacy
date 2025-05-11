@@ -1,0 +1,6 @@
+[submodule "apoli"]
+	path = apoli
+	url = git@git.devos.one:BluSpring/apoli-legacy.git
+[submodule "calio"]
+	path = calio
+	url = git@git.devos.one:BluSpring/calio-legacy.git
