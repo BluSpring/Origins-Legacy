@@ -6,26 +6,27 @@ import io.github.apace100.apoli.power.MultiplePowerType;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.apoli.power.PowerTypeRegistry;
 import io.github.apace100.calio.data.SerializableData;
-import io.github.apace100.calio.data.SerializableData.Instance;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.data.CompatibilityDataTypes;
 import io.github.apace100.origins.data.OriginsDataTypes;
 import io.github.apace100.origins.registry.ModComponents;
+import io.github.apace100.origins.util.ByteBufUtils;
+import io.netty.buffer.ByteBuf;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,7 +34,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Origin {
-    public static final StreamCodec<RegistryFriendlyByteBuf, Origin> STREAM_CODEC = StreamCodec.of((buf, value) -> value.write(buf), Origin::read);
+    public static final StreamCodec<RegistryFriendlyByteBuf, Origin> STREAM_CODEC = ByteBufUtils.composite(
+        ResourceLocation.STREAM_CODEC, Origin::getIdentifier,
+        ItemStack.OPTIONAL_STREAM_CODEC, Origin::getDisplayItem,
+        Impact.STREAM_CODEC, Origin::getImpact,
+        ByteBufCodecs.VAR_INT, Origin::getOrder,
+        ByteBufCodecs.VAR_INT, Origin::getLoadingPriority,
+        ByteBufCodecs.BOOL, Origin::isChoosable,
+        ByteBufCodecs.<ByteBuf, ResourceLocation>list().apply(ResourceLocation.STREAM_CODEC), Origin::getPowerIds,
+        ByteBufCodecs.STRING_UTF8, Origin::getOrCreateNameTranslationKey,
+        ByteBufCodecs.STRING_UTF8, Origin::getOrCreateDescriptionTranslationKey,
+        ByteBufCodecs.<RegistryFriendlyByteBuf, OriginUpgrade>list().apply(OriginsDataTypes.UPGRADE.streamCodec()), Origin::getUpgrades,
+        Origin::new
+    );
 
     public static final SerializableData DATA = new SerializableData()
         .add("powers", SerializableDataTypes.IDENTIFIERS, Lists.newArrayList())
@@ -92,6 +105,17 @@ public class Origin {
         this.isChoosable = true;
         this.order = order;
         this.loadingPriority = loadingPriority;
+    }
+
+    public Origin(ResourceLocation id, ItemStack icon, Impact impact, int order, int loadingPriority, boolean choosable, List<ResourceLocation> powerIds, String name, String description, List<OriginUpgrade> upgrades) {
+        this(id, icon, impact, order, loadingPriority);
+        this.isChoosable = choosable;
+        this.nameTranslationKey = name;
+        this.descriptionTranslationKey = description;
+        this.upgrades = upgrades;
+        for (ResourceLocation powerId : powerIds) {
+            this.add(PowerTypeRegistry.get(powerId));
+        }
     }
 
     public Origin addUpgrade(OriginUpgrade upgrade) {
@@ -176,6 +200,14 @@ public class Origin {
 
     public Iterable<PowerType<?>> getPowerTypes() {
         return powerTypes;
+    }
+
+    private List<ResourceLocation> getPowerIds() {
+        return powerTypes.stream().map(PowerType::getIdentifier).collect(Collectors.toList());
+    }
+
+    private List<OriginUpgrade> getUpgrades() {
+        return this.upgrades;
     }
 
     public Impact getImpact() {

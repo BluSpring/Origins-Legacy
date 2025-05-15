@@ -1,8 +1,12 @@
 package io.github.apace100.origins.origin;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
 
 public enum Impact {
 	
@@ -10,7 +14,9 @@ public enum Impact {
 	LOW(1, "low", ChatFormatting.GREEN),
 	MEDIUM(2, "medium", ChatFormatting.YELLOW),
 	HIGH(3, "high", ChatFormatting.RED);
-	
+
+	public static final StreamCodec<ByteBuf, Impact> STREAM_CODEC = ByteBufCodecs.idMapper(ByIdMap.continuous(Impact::ordinal, Impact.values(), ByIdMap.OutOfBoundsStrategy.CLAMP), Impact::ordinal);
+
 	private int impactValue;
 	private String translationKey;
 	private ChatFormatting textStyle;
