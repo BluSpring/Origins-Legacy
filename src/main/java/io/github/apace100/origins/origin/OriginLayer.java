@@ -10,6 +10,8 @@ import io.github.apace100.calio.data.SerializableDataTypes;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class OriginLayer implements Comparable<OriginLayer> {
+    public static final StreamCodec<RegistryFriendlyByteBuf, OriginLayer> STREAM_CODEC = StreamCodec.of((buf, value) -> value.write(buf), OriginLayer::read);
 
     private int order;
     private ResourceLocation identifier;
@@ -153,8 +156,8 @@ public class OriginLayer implements Comparable<OriginLayer> {
         if(json.has("enabled")) {
             this.enabled = json.get("enabled").getAsBoolean();
         }
-        if(json.has("origins")) {
-            JsonArray originArray = json.getAsJsonArray("origins");
+        if(json.has("layers")) {
+            JsonArray originArray = json.getAsJsonArray("layers");
             originArray.forEach(je -> this.conditionedOrigins.add(ConditionedOrigin.read(je)));
         }
         if(json.has("name")) {
@@ -192,7 +195,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
             excludeRandomArray.forEach(je -> originsExcludedFromRandom.add(ResourceLocation.tryParse(je.getAsString())));
         }
         if(json.has("default_origin")) {
-            this.defaultOrigin = new ResourceLocation(GsonHelper.getAsString(json, "default_origin"));
+            this.defaultOrigin = ResourceLocation.parse(GsonHelper.getAsString(json, "default_origin"));
         }
         if(json.has("auto_choose")) {
             this.autoChooseIfNoChoice = GsonHelper.getAsBoolean(json, "auto_choose");
@@ -223,7 +226,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
         return Integer.compare(order, o.order);
     }
 
-    public void write(FriendlyByteBuf buffer) {
+    public void write(RegistryFriendlyByteBuf buffer) {
         buffer.writeUtf(identifier.toString());
         buffer.writeInt(order);
         buffer.writeBoolean(enabled);
@@ -251,7 +254,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
     }
 
     @Environment(EnvType.CLIENT)
-    public static OriginLayer read(FriendlyByteBuf buffer) {
+    public static OriginLayer read(RegistryFriendlyByteBuf buffer) {
         OriginLayer layer = new OriginLayer();
         layer.identifier = ResourceLocation.tryParse(buffer.readUtf());
         layer.order = buffer.readInt();
@@ -287,10 +290,10 @@ public class OriginLayer implements Comparable<OriginLayer> {
 
     public static OriginLayer fromJson(ResourceLocation id, JsonObject json) {
         int order = GsonHelper.getAsInt(json, "order", OriginLayers.size());
-        if(!json.has("origins") || !json.get("origins").isJsonArray()) {
-            throw new JsonParseException("Origin layer JSON requires \"origins\" array of origin IDs to include in the layer.");
+        if(!json.has("layers") || !json.get("layers").isJsonArray()) {
+            throw new JsonParseException("Origin layer JSON requires \"layers\" array of origin IDs to include in the layer.");
         }
-        JsonArray originArray = json.getAsJsonArray("origins");
+        JsonArray originArray = json.getAsJsonArray("layers");
         List<ConditionedOrigin> list = new ArrayList<>(originArray.size());
         originArray.forEach(je -> list.add(ConditionedOrigin.read(je)));
         boolean enabled = GsonHelper.getAsBoolean(json, "enabled", true);
@@ -321,7 +324,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
             excludeRandomArray.forEach(je -> layer.originsExcludedFromRandom.add(ResourceLocation.tryParse(je.getAsString())));
         }
         if(json.has("default_origin")) {
-            layer.defaultOrigin = new ResourceLocation(GsonHelper.getAsString(json, "default_origin"));
+            layer.defaultOrigin = ResourceLocation.parse(GsonHelper.getAsString(json, "default_origin"));
         }
         layer.autoChooseIfNoChoice = GsonHelper.getAsBoolean(json, "auto_choose", false);
         layer.hidden = GsonHelper.getAsBoolean(json, "hidden", false);
@@ -346,9 +349,9 @@ public class OriginLayer implements Comparable<OriginLayer> {
         }
         private static final SerializableData conditionedOriginObjectData = new SerializableData()
             .add("condition", ApoliDataTypes.ENTITY_CONDITION)
-            .add("origins", SerializableDataTypes.IDENTIFIERS);
+            .add("layers", SerializableDataTypes.IDENTIFIERS);
 
-        public void write(FriendlyByteBuf buffer) {
+        public void write(RegistryFriendlyByteBuf buffer) {
             buffer.writeBoolean(condition != null);
             if(condition != null)
                 condition.write(buffer);
@@ -357,7 +360,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
         }
 
         @Environment(EnvType.CLIENT)
-        public static ConditionedOrigin read(FriendlyByteBuf buffer) {
+        public static ConditionedOrigin read(RegistryFriendlyByteBuf buffer) {
             ConditionFactory<Entity>.Instance condition = null;
             if(buffer.readBoolean()) {
                 condition = ConditionTypes.ENTITY.read(buffer);
@@ -380,7 +383,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
                 throw new JsonParseException("Expected origin in layer to be either a string or an object.");
             } else if(element.isJsonObject()) {
                 SerializableData.Instance data = conditionedOriginObjectData.read(element.getAsJsonObject());
-                return new ConditionedOrigin((ConditionFactory<Entity>.Instance)data.get("condition"), (List<ResourceLocation>)data.get("origins"));
+                return new ConditionedOrigin((ConditionFactory<Entity>.Instance)data.get("condition"), (List<ResourceLocation>)data.get("layers"));
             }
             throw new JsonParseException("Expected origin in layer to be either a string or an object.");
         }

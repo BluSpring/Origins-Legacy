@@ -29,16 +29,16 @@ public class ModPacketsC2S {
         ServerPlayNetworking.registerGlobalReceiver(ModPackets.CHOOSE_RANDOM_ORIGIN, ModPacketsC2S::chooseRandomOrigin);
     }
 
-    private static void chooseOrigin(MinecraftServer minecraftServer, ServerPlayer playerEntity, ServerGamePacketListenerImpl serverPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
-        String originId = packetByteBuf.readUtf(32767);
-        String layerId = packetByteBuf.readUtf(32767);
-        minecraftServer.execute(() -> {
+    private static void chooseOrigin(ChooseOriginPacket packet, ServerPlayNetworking.Context context) {
+        ResourceLocation originId = packet.originId();
+        ResourceLocation layerId = packet.layerId();
+        ServerPlayer playerEntity = context.player();
+        context.server().execute(() -> {
             OriginComponent component = ModComponents.ORIGIN.get(playerEntity);
-            OriginLayer layer = OriginLayers.getLayer(ResourceLocation.tryParse(layerId));
+            OriginLayer layer = OriginLayers.getLayer(layerId);
             if(!component.hasAllOrigins() && !component.hasOrigin(layer)) {
-                ResourceLocation id = ResourceLocation.tryParse(originId);
-                if(id != null) {
-                    Origin origin = OriginRegistry.get(id);
+                if(originId != null) {
+                    Origin origin = OriginRegistry.get(originId);
                     if(origin.isChoosable() && layer.contains(origin, playerEntity)) {
                         boolean hadOriginBefore = component.hadOriginBefore();
                         boolean hadAllOrigins = component.hasAllOrigins();
@@ -64,11 +64,12 @@ public class ModPacketsC2S {
         });
     }
 
-    private static void chooseRandomOrigin(MinecraftServer minecraftServer, ServerPlayer playerEntity, ServerGamePacketListenerImpl serverPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
-        String layerId = packetByteBuf.readUtf(32767);
-        minecraftServer.execute(() -> {
+    private static void chooseRandomOrigin(ChooseRandomOriginPacket packet, ServerPlayNetworking.Context context) {
+        ResourceLocation layerId = packet.layerId();
+        ServerPlayer playerEntity = context.player();
+        context.server().execute(() -> {
             OriginComponent component = ModComponents.ORIGIN.get(playerEntity);
-            OriginLayer layer = OriginLayers.getLayer(ResourceLocation.tryParse(layerId));
+            OriginLayer layer = OriginLayers.getLayer(layerId);
             if(!component.hasAllOrigins() && !component.hasOrigin(layer)) {
                 List<ResourceLocation> randomOrigins = layer.getRandomOrigins(playerEntity);
                 if(layer.isRandomAllowed() && randomOrigins.size() > 0) {
@@ -121,14 +122,11 @@ public class ModPacketsC2S {
         }
     }
 
-    private static void handshake(ServerLoginPacketListenerImpl serverLoginNetworkHandler, MinecraftServer minecraftServer, PacketSender packetSender, ServerLoginNetworking.LoginSynchronizer loginSynchronizer) {
+    private static void handshake(ServerLoginPacketListenerImpl serverLoginNetworkHandler, MinecraftServer minecraftServer, LoginPacketSender packetSender, ServerLoginNetworking.LoginSynchronizer loginSynchronizer) {
         packetSender.sendPacket(ModPackets.HANDSHAKE, PacketByteBufs.empty());
     }
 
     private static void confirmOrigin(ServerPlayer player, OriginLayer layer, Origin origin) {
-        FriendlyByteBuf buf = PacketByteBufs.create();
-        buf.writeResourceLocation(layer.getIdentifier());
-        buf.writeResourceLocation(origin.getIdentifier());
-        ServerPlayNetworking.send(player, ModPackets.CONFIRM_ORIGIN, buf);
+        ServerPlayNetworking.send(player, new ConfirmOriginPacket(layer.getIdentifier(), origin.getIdentifier()));
     }
 }

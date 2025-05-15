@@ -71,7 +71,7 @@ public final class WaterBreathingMixin {
             }
         }
 
-        @ModifyExpressionValue(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;isEyeInFluid(Lnet/minecraft/tags/TagKey;)Z"), method = "turtleHelmetTick")
+        @ModifyExpressionValue(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;isEyeInFluid(Lnet/minecraft/tags/TagKey;)Z"), method = "tick")
         public boolean isSubmergedInProxy(boolean submerged) {
             if(OriginsPowerTypes.WATER_BREATHING.isActive(this)) {
                 return !submerged;

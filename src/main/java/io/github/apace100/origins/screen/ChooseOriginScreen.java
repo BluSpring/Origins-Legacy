@@ -1,7 +1,8 @@
 package io.github.apace100.origins.screen;
 
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.networking.ModPackets;
+import io.github.apace100.origins.networking.ChooseOriginPacket;
+import io.github.apace100.origins.networking.ChooseRandomOriginPacket;
 import io.github.apace100.origins.origin.Impact;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
@@ -12,6 +13,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,6 +21,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ResolvableProfile;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,8 +49,8 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 			if(origin.isChoosable()) {
 				ItemStack displayItem = origin.getDisplayItem();
 				if(displayItem.getItem() == Items.PLAYER_HEAD) {
-					if(!displayItem.hasTag() || !displayItem.getTag().contains("SkullOwner")) {
-						displayItem.getOrCreateTag().putString("SkullOwner", player.getDisplayName().getString());
+					if(!displayItem.has(DataComponents.PROFILE)) {
+						displayItem.set(DataComponents.PROFILE, new ResolvableProfile(player.getGameProfile()));
 					}
 				}
 				this.originSelection.add(origin);
@@ -94,12 +98,9 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 		addRenderableWidget(Button.builder(Component.translatable(Origins.MODID + ".gui.select"), b -> {
 			FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 			if(currentOrigin == originSelection.size()) {
-				buf.writeUtf(layerList.get(currentLayerIndex).getIdentifier().toString());
-				ClientPlayNetworking.send(ModPackets.CHOOSE_RANDOM_ORIGIN, buf);
+				ClientPlayNetworking.send(new ChooseRandomOriginPacket(layerList.get(currentLayerIndex).getIdentifier()));
 			} else {
-				buf.writeUtf(getCurrentOrigin().getIdentifier().toString());
-				buf.writeUtf(layerList.get(currentLayerIndex).getIdentifier().toString());
-				ClientPlayNetworking.send(ModPackets.CHOOSE_ORIGIN, buf);
+				ClientPlayNetworking.send(new ChooseOriginPacket(getCurrentOrigin().getIdentifier(), layerList.get(currentLayerIndex).getIdentifier()));
 			}
 			openNextLayerScreen();
 		}).bounds(guiLeft + windowWidth / 2 - 50, guiTop + windowHeight + 5, 100, 20).build());

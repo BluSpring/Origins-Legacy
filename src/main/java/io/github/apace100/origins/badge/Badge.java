@@ -8,11 +8,14 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+
 import java.util.List;
 
 public interface Badge extends DataObject<Badge> {
+    StreamCodec<RegistryFriendlyByteBuf, Badge> STREAM_CODEC = StreamCodec.of((buf, value) -> value.writeBuf(buf), BadgeManager.REGISTRY::receiveDataObject);
     
     ResourceLocation spriteId();
     
@@ -30,7 +33,7 @@ public interface Badge extends DataObject<Badge> {
         return this.getBadgeFactory();
     }
 
-    default void writeBuf(FriendlyByteBuf buf) {
+    default void writeBuf(RegistryFriendlyByteBuf buf) {
         DataObjectFactory<Badge> factory = this.getFactory();
         buf.writeResourceLocation(this.getBadgeFactory().id());
         factory.getData().write(buf, factory.toData(this));

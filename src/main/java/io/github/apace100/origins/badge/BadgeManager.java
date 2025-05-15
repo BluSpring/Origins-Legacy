@@ -8,16 +8,15 @@ import io.github.apace100.apoli.power.*;
 import io.github.apace100.calio.registry.DataObjectRegistry;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.integration.AutoBadgeCallback;
-import io.github.apace100.origins.networking.ModPackets;
-import io.netty.buffer.Unpooled;
+import io.github.apace100.origins.networking.BadgeListPacket;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.TransientCraftingContainer;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,14 +69,7 @@ public final class BadgeManager {
 
     public static void sync(ServerPlayer player) {
         REGISTRY.sync(player);
-        FriendlyByteBuf badgeData = new FriendlyByteBuf(Unpooled.buffer());
-        badgeData.writeInt(BADGES.size());
-        BADGES.forEach((id, list) -> {
-            badgeData.writeResourceLocation(id);
-            badgeData.writeInt(list.size());
-            list.forEach(badge -> badge.writeBuf(badgeData));
-        });
-        ServerPlayNetworking.send(player, ModPackets.BADGE_LIST, badgeData);
+        ServerPlayNetworking.send(player, new BadgeListPacket(BADGES));
     }
 
     public static void readCustomBadges(ResourceLocation powerId, ResourceLocation factoryId, boolean isSubPower, JsonElement data, PowerType<?> powerType) {
@@ -144,15 +136,15 @@ public final class BadgeManager {
                 badgeList.add(REGISTRY.get(autoBadgeId));
             } else {
                 badgeList.add(new KeybindBadge(toggle ? TOGGLE_BADGE_SPRITE : ACTIVE_BADGE_SPRITE,
-                    toggle ? "origins.gui.badge.toggle"
-                        : "origins.gui.badge.active"
+                    toggle ? "layers.gui.badge.toggle"
+                        : "layers.gui.badge.active"
                 ));
             }
         } else if(power instanceof RecipePower recipePower) {
-            Recipe<TransientCraftingContainer> recipe = recipePower.getRecipe();
-            String type = (Recipe<?>)recipe instanceof ShapedRecipe ? "shaped" : "shapeless";
+            Recipe<CraftingInput> recipe = recipePower.getRecipe();
+            String type = recipe instanceof ShapedRecipe ? "shaped" : "shapeless";
             badgeList.add(new CraftingRecipeBadge(RECIPE_BADGE_SPRITE, recipe,
-                Component.translatable("origins.gui.badge.recipe.crafting." + type), null
+                Component.translatable("layers.gui.badge.recipe.crafting." + type), null
             ));
         }
     }

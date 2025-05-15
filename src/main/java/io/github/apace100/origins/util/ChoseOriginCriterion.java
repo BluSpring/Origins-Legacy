@@ -1,44 +1,49 @@
 package io.github.apace100.origins.util;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.origin.Origin;
-import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
 import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.DeserializationContext;
-import net.minecraft.advancements.critereon.SerializationContext;
+import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.GsonHelper;
+
+import java.util.Optional;
 
 public class ChoseOriginCriterion extends SimpleCriterionTrigger<ChoseOriginCriterion.Conditions> {
+    public static final Codec<ChoseOriginCriterion.Conditions> CODEC = RecordCodecBuilder.create(instance ->
+        instance.group(
+            EntityPredicate.ADVANCEMENT_CODEC
+                .optionalFieldOf("player")
+                .forGetter(Conditions::player),
+            ResourceLocation.CODEC
+                .fieldOf("origin")
+                .forGetter(conditions -> conditions.originId)
+        )
+            .apply(instance, Conditions::new)
+    );
 
     public static ChoseOriginCriterion INSTANCE = new ChoseOriginCriterion();
 
-    private static final ResourceLocation ID = new ResourceLocation(Origins.MODID, "chose_origin");
-
-    @Override
-    protected Conditions createInstance(JsonObject obj, ContextAwarePredicate playerPredicate, DeserializationContext predicateDeserializer) {
-        ResourceLocation id = ResourceLocation.tryParse(GsonHelper.getAsString(obj, "origin"));
-        return new Conditions(playerPredicate, id);
-    }
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Origins.MODID, "chose_origin");
 
     public void trigger(ServerPlayer player, Origin origin) {
         this.trigger(player, (conditions -> conditions.matches(origin)));
     }
 
     @Override
-    public ResourceLocation getId() {
-        return ID;
+    public Codec<Conditions> codec() {
+        return CODEC;
     }
 
-    public static class Conditions extends AbstractCriterionTriggerInstance {
+    public static class Conditions implements SimpleCriterionTrigger.SimpleInstance {
         private final ResourceLocation originId;
+        private final Optional<ContextAwarePredicate> player;
 
-        public Conditions(ContextAwarePredicate player, ResourceLocation originId) {
-            super(ChoseOriginCriterion.ID, player);
+        public Conditions(Optional<ContextAwarePredicate> player, ResourceLocation originId) {
+            this.player = player;
             this.originId = originId;
         }
 
@@ -46,10 +51,9 @@ public class ChoseOriginCriterion extends SimpleCriterionTrigger<ChoseOriginCrit
             return origin.getIdentifier().equals(originId);
         }
 
-        public JsonObject serializeToJson(SerializationContext predicateSerializer) {
-            JsonObject jsonObject = super.serializeToJson(predicateSerializer);
-            jsonObject.add("origin", new JsonPrimitive(originId.toString()));
-            return jsonObject;
+        @Override
+        public Optional<ContextAwarePredicate> player() {
+            return player;
         }
     }
 }

@@ -96,11 +96,11 @@ public class OriginLayers extends MultiJsonDataLoader implements IdentifiableRes
 
     @Override
     public ResourceLocation getFabricId() {
-        return new ResourceLocation(Origins.MODID, "origin_layers");
+        return ResourceLocation.fromNamespaceAndPath(Origins.MODID, "origin_layers");
     }
 
     @Override
     public Collection<ResourceLocation> getFabricDependencies() {
-        return Set.of(Origins.identifier("origins"));
+        return Set.of(Origins.identifier("layers"));
     }
 }

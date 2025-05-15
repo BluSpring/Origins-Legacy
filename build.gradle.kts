@@ -1,5 +1,5 @@
 plugins {
-	id("fabric-loom") version "1.9-SNAPSHOT"
+	id("fabric-loom") version "1.10-SNAPSHOT"
 	`maven-publish`
 }
 
@@ -9,6 +9,12 @@ base {
 
 version = project.property("mod_version") as String
 group = project.property("maven_group") as String
+
+allprojects {
+	repositories {
+		maven("https://maven.parchmentmc.org")
+	}
+}
 
 repositories {
 	maven("https://maven.ladysnake.org/releases") {
@@ -61,8 +67,6 @@ dependencies {
 	}
 
 	modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
-
-	include(modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${project.property("reach_version")}")!!)
 }
 
 tasks.processResources {

@@ -1,6 +1,5 @@
 package io.github.apace100.origins.networking;
 
-import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.OriginsClient;
 import io.github.apace100.origins.badge.Badge;
@@ -14,8 +13,6 @@ import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.registry.ModComponents;
 import io.github.apace100.origins.screen.ChooseOriginScreen;
 import io.github.apace100.origins.screen.WaitForNextLayerScreen;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginNetworking;
@@ -27,6 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.PacketSendListener;
 import net.minecraft.resources.ResourceLocation;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -47,20 +45,20 @@ public class ModPacketsS2C {
     }
 
     @Environment(EnvType.CLIENT)
-    private static void receiveOriginConfirmation(Minecraft minecraftClient, ClientPacketListener clientPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
-        OriginLayer layer = OriginLayers.getLayer(packetByteBuf.readResourceLocation());
-        Origin origin = OriginRegistry.get(packetByteBuf.readResourceLocation());
-        minecraftClient.execute(() -> {
-            OriginComponent component = ModComponents.ORIGIN.get(minecraftClient.player);
+    private static void receiveOriginConfirmation(ConfirmOriginPacket packet, ClientPlayNetworking.Context context) {
+        OriginLayer layer = OriginLayers.getLayer(packet.layerId());
+        Origin origin = OriginRegistry.get(packet.originId());
+        context.client().execute(() -> {
+            OriginComponent component = ModComponents.ORIGIN.get(context.player());
             component.setOrigin(layer, origin);
-            if(minecraftClient.screen instanceof WaitForNextLayerScreen) {
-                ((WaitForNextLayerScreen)minecraftClient.screen).openSelection();
+            if(context.client().screen instanceof WaitForNextLayerScreen) {
+                ((WaitForNextLayerScreen)context.client().screen).openSelection();
             }
         });
     }
 
     @Environment(EnvType.CLIENT)
-    private static CompletableFuture<FriendlyByteBuf> handleHandshake(Minecraft minecraftClient, ClientHandshakePacketListenerImpl clientLoginNetworkHandler, FriendlyByteBuf packetByteBuf, Consumer<GenericFutureListener<? extends Future<? super Void>>> genericFutureListenerConsumer) {
+    private static CompletableFuture<FriendlyByteBuf> handleHandshake(Minecraft minecraftClient, ClientHandshakePacketListenerImpl clientLoginNetworkHandler, FriendlyByteBuf packetByteBuf, Consumer<PacketSendListener> genericFutureListenerConsumer) {
         FriendlyByteBuf buf = PacketByteBufs.create();
         buf.writeInt(Origins.SEMVER.length);
         for(int i = 0; i < Origins.SEMVER.length; i++) {
@@ -71,36 +69,28 @@ public class ModPacketsS2C {
     }
 
     @Environment(EnvType.CLIENT)
-    private static void openOriginScreen(Minecraft minecraftClient, ClientPacketListener clientPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
-        boolean showDirtBackground = packetByteBuf.readBoolean();
-        minecraftClient.execute(() -> {
+    private static void openOriginScreen(OpenOriginScreenPacket packet, ClientPlayNetworking.Context context) {
+        boolean showDirtBackground = packet.showDirtBackground();
+        context.client().execute(() -> {
             ArrayList<OriginLayer> layers = new ArrayList<>();
-            OriginComponent component = ModComponents.ORIGIN.get(minecraftClient.player);
+            OriginComponent component = ModComponents.ORIGIN.get(context.player());
             OriginLayers.getLayers().forEach(layer -> {
                 if(layer.isEnabled() && !component.hasOrigin(layer)) {
                     layers.add(layer);
                 }
             });
             Collections.sort(layers);
-            minecraftClient.setScreen(new ChooseOriginScreen(layers, 0, showDirtBackground));
+            context.client().setScreen(new ChooseOriginScreen(layers, 0, showDirtBackground));
         });
     }
 
     @Environment(EnvType.CLIENT)
-    private static void receiveOriginList(Minecraft minecraftClient, ClientPacketListener clientPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
+    private static void receiveOriginList(OriginListPacket packet, ClientPlayNetworking.Context context) {
         try {
-            ResourceLocation[] ids = new ResourceLocation[packetByteBuf.readInt()];
-            SerializableData.Instance[] origins = new SerializableData.Instance[ids.length];
-            for(int i = 0; i < origins.length; i++) {
-                ids[i] = ResourceLocation.tryParse(packetByteBuf.readUtf());
-                origins[i] = Origin.DATA.read(packetByteBuf);
-            }
-            minecraftClient.execute(() -> {
+            context.client().execute(() -> {
                 OriginsClient.isServerRunningOrigins = true;
                 OriginRegistry.reset();
-                for(int i = 0; i < ids.length; i++) {
-                    OriginRegistry.register(ids[i], Origin.createFromData(ids[i], origins[i]));
-                }
+                packet.origins().forEach(OriginRegistry::register);
             });
         } catch (Exception e) {
             Origins.LOGGER.error(e);
@@ -108,18 +98,11 @@ public class ModPacketsS2C {
     }
 
     @Environment(EnvType.CLIENT)
-    private static void receiveLayerList(Minecraft minecraftClient, ClientPacketListener clientPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
+    private static void receiveLayerList(LayerListPacket packet, ClientPlayNetworking.Context context) {
         try {
-            int layerCount = packetByteBuf.readInt();
-            OriginLayer[] layers = new OriginLayer[layerCount];
-            for(int i = 0; i < layerCount; i++) {
-                layers[i] = OriginLayer.read(packetByteBuf);
-            }
-            minecraftClient.execute(() -> {
+            context.client().execute(() -> {
                 OriginLayers.clear();
-                for(int i = 0; i < layerCount; i++) {
-                    OriginLayers.add(layers[i]);
-                }
+                packet.layers().forEach(OriginLayers::add);
                 OriginDataLoadedCallback.EVENT.invoker().onDataLoaded(true);
             });
         } catch (Exception e) {
@@ -128,23 +111,11 @@ public class ModPacketsS2C {
     }
 
     @Environment(EnvType.CLIENT)
-    private static void receiveBadgeList(Minecraft minecraftClient, ClientPacketListener clientPlayNetworkHandler, FriendlyByteBuf packetByteBuf, PacketSender packetSender) {
+    private static void receiveBadgeList(BadgeListPacket packet, ClientPlayNetworking.Context context) {
         try {
-            HashMap<ResourceLocation, List<Badge>> badges = new HashMap<>();
-            int count = packetByteBuf.readInt();
-            for(int i = 0; i < count; i++) {
-                ResourceLocation powerId = packetByteBuf.readResourceLocation();
-                List<Badge> badgeList = new LinkedList<>();
-                int badgeCount = packetByteBuf.readInt();
-                for(int j = 0; j < badgeCount; j++) {
-                    Badge badge = BadgeManager.REGISTRY.receiveDataObject(packetByteBuf);
-                    badgeList.add(badge);
-                }
-                badges.put(powerId, badgeList);
-            }
-            minecraftClient.execute(() -> {
+            context.client().execute(() -> {
                 BadgeManager.clear();
-                for(Map.Entry<ResourceLocation, List<Badge>> badgeEntry : badges.entrySet()) {
+                for(Map.Entry<ResourceLocation, List<Badge>> badgeEntry : packet.badges().entrySet()) {
                     for(Badge badge : badgeEntry.getValue()) {
                         BadgeManager.putPowerBadge(badgeEntry.getKey(), badge);
                     }

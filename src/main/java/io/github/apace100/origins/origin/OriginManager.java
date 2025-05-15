@@ -19,7 +19,7 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 
 	public OriginManager() {
-		super(GSON, "origins");
+		super(GSON, "layers");
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 				}
 			}
 		});
-		Origins.LOGGER.info("Finished loading origins from data files. Registry contains " + OriginRegistry.size() + " origins.");
+		Origins.LOGGER.info("Finished loading layers from data files. Registry contains " + OriginRegistry.size() + " layers.");
 		if(hasConfigChanged.get()) {
 			Origins.serializeConfig();
 		}
@@ -65,7 +65,7 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 
 	@Override
 	public ResourceLocation getFabricId() {
-		return new ResourceLocation(Origins.MODID, "origins");
+		return ResourceLocation.fromNamespaceAndPath(Origins.MODID, "layers");
 	}
 
 	@Override

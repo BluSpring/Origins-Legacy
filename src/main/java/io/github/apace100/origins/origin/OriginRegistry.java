@@ -45,6 +45,10 @@ public class OriginRegistry {
         return idToOrigin.values();
     }
 
+    public static Map<ResourceLocation, Origin> get() {
+        return idToOrigin;
+    }
+
     public static Origin get(ResourceLocation id) {
         if(!idToOrigin.containsKey(id)) {
             throw new IllegalArgumentException("Could not get origin from id '" + id.toString() + "', as it was not registered!");

@@ -47,15 +47,15 @@ public class WaitForNextLayerScreen extends Screen {
             openSelection();
             return;
         }
-        this.renderBackground(context);
+        this.renderBackground(context, mouseX, mouseY, delta);
     }
 
     @Override
-    public void renderBackground(GuiGraphics context) {
+    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
         if(showDirtBackground) {
-            super.renderDirtBackground(context);
+            super.renderMenuBackground(context);
         } else {
-            super.renderBackground(context);
+            super.renderBackground(context, mouseX, mouseY, delta);
         }
     }
 }

@@ -1,6 +1,10 @@
 package io.github.apace100.origins.mixin;
 
-import dev.onyxstudios.cca.api.v3.component.ComponentProvider;
+import io.github.apace100.origins.networking.LayerListPacket;
+import io.github.apace100.origins.networking.OpenOriginScreenPacket;
+import io.github.apace100.origins.networking.OriginListPacket;
+import net.minecraft.server.network.CommonListenerCookie;
+import org.ladysnake.cca.api.v3.component.ComponentProvider;
 import io.github.apace100.origins.badge.BadgeManager;
 import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.networking.ModPackets;
@@ -28,31 +32,11 @@ public abstract class LoginMixin {
 	@Shadow public abstract List<ServerPlayer> getPlayers();
 
 	@Inject(at = @At("TAIL"), method = "placeNewPlayer")
-	private void openOriginsGui(Connection connection, ServerPlayer player, CallbackInfo info) {
+	private void openOriginsGui(Connection connection, ServerPlayer player, CommonListenerCookie cookie, CallbackInfo ci) {
 		OriginComponent component = ModComponents.ORIGIN.get(player);
 
-		FriendlyByteBuf originListData = new FriendlyByteBuf(Unpooled.buffer());
-		originListData.writeInt(OriginRegistry.size() - 1);
-		OriginRegistry.entries().forEach((entry) -> {
-			if(entry.getValue() != Origin.EMPTY) {
-				originListData.writeResourceLocation(entry.getKey());
-				entry.getValue().write(originListData);
-			}
-		});
-
-		FriendlyByteBuf originLayerData = new FriendlyByteBuf(Unpooled.buffer());
-		originLayerData.writeInt(OriginLayers.size());
-		OriginLayers.getLayers().forEach((layer) -> {
-			layer.write(originLayerData);
-			if(layer.isEnabled()) {
-				if(!component.hasOrigin(layer)) {
-					component.setOrigin(layer, Origin.EMPTY);
-				}
-			}
-		});
-
-		ServerPlayNetworking.send(player, ModPackets.ORIGIN_LIST, originListData);
-		ServerPlayNetworking.send(player, ModPackets.LAYER_LIST, originLayerData);
+		ServerPlayNetworking.send(player, new OriginListPacket(OriginRegistry.get()));
+		ServerPlayNetworking.send(player, new LayerListPacket(OriginLayers.getLayers().stream().toList()));
 
 		BadgeManager.sync(player);
 
@@ -66,9 +50,7 @@ public abstract class LoginMixin {
 			if(component.hasAllOrigins()) {
 				OriginComponent.onChosen(player, false);
 			} else {
-				FriendlyByteBuf data = new FriendlyByteBuf(Unpooled.buffer());
-				data.writeBoolean(true);
-				ServerPlayNetworking.send(player, ModPackets.OPEN_ORIGIN_SCREEN, data);
+				ServerPlayNetworking.send(player, new OpenOriginScreenPacket(true));
 			}
 		}
 	}

@@ -9,10 +9,10 @@ import net.minecraft.world.level.block.Block;
 
 public class ModTags {
 
-    public static final TagKey<Item> MEAT = TagKey.create(Registries.ITEM, new ResourceLocation(Origins.MODID, "meat"));
-    public static final TagKey<Block> UNPHASABLE = TagKey.create(Registries.BLOCK, new ResourceLocation(Origins.MODID, "unphasable"));
-    public static final TagKey<Block> NATURAL_STONE = TagKey.create(Registries.BLOCK, new ResourceLocation(Origins.MODID, "natural_stone"));
-    public static final TagKey<Item> RANGED_WEAPONS = TagKey.create(Registries.ITEM, new ResourceLocation(Origins.MODID, "ranged_weapons"));
+    public static final TagKey<Item> MEAT = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Origins.MODID, "meat"));
+    public static final TagKey<Block> UNPHASABLE = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Origins.MODID, "unphasable"));
+    public static final TagKey<Block> NATURAL_STONE = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Origins.MODID, "natural_stone"));
+    public static final TagKey<Item> RANGED_WEAPONS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Origins.MODID, "ranged_weapons"));
 
     public static void register() {
 

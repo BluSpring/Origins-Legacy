@@ -7,11 +7,12 @@ import io.github.apace100.apoli.Apoli;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.apoli.power.PowerTypes;
 import io.github.apace100.apoli.util.NamespaceAlias;
-import io.github.apace100.calio.mixin.CriteriaRegistryInvoker;
 import io.github.apace100.calio.resource.OrderedResourceListenerInitializer;
 import io.github.apace100.calio.resource.OrderedResourceListenerManager;
 import io.github.apace100.origins.badge.BadgeManager;
 import io.github.apace100.origins.command.OriginCommand;
+import io.github.apace100.origins.component.OriginTargetsComponent;
+import io.github.apace100.origins.networking.ModPackets;
 import io.github.apace100.origins.networking.ModPacketsC2S;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayers;
@@ -31,6 +32,8 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.util.GsonHelper;
@@ -40,7 +43,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Origins implements ModInitializer, OrderedResourceListenerInitializer {
 
-	public static final String MODID = "origins";
+	public static final String MODID = "layers";
 	public static String VERSION = "";
 	public static int[] SEMVER;
 	public static final Logger LOGGER = LogManager.getLogger(Origins.class);
@@ -50,6 +53,7 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 
 	@Override
 	public void onInitialize() {
+		ModPackets.init();
 		FabricLoader.getInstance().getModContainer(MODID).ifPresent(modContainer -> {
 			VERSION = modContainer.getMetadata().getVersion().getFriendlyString();
 			if(VERSION.contains("+")) {
@@ -95,7 +99,8 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 			content.accept(ModItems.ORB_OF_ORIGIN);
 		});
 
-		CriteriaRegistryInvoker.callRegister(ChoseOriginCriterion.INSTANCE);
+		Registry.register(BuiltInRegistries.TRIGGER_TYPES, Origins.identifier("choose_origin"), ChoseOriginCriterion.INSTANCE);
+		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Origins.identifier("origin_targets"), OriginTargetsComponent.TYPE);
 	}
 
 	public static void serializeConfig() {
@@ -107,13 +112,13 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 	}
 
 	public static ResourceLocation identifier(String path) {
-		return new ResourceLocation(Origins.MODID, path);
+		return ResourceLocation.fromNamespaceAndPath(Origins.MODID, path);
 	}
 
 	@Override
 	public void registerResourceListeners(OrderedResourceListenerManager manager) {
 		ResourceLocation powerData = Apoli.identifier("powers");
-		ResourceLocation originData = Origins.identifier("origins");
+		ResourceLocation originData = Origins.identifier("layers");
 
 		OriginManager originLoader = new OriginManager();
 		manager.register(PackType.SERVER_DATA, originLoader).after(powerData).complete();

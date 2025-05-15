@@ -6,6 +6,7 @@ import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.origin.OriginUpgrade;
 import io.github.apace100.origins.registry.ModComponents;
+import net.minecraft.advancements.AdvancementHolder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,8 +28,8 @@ public class OriginUpgradeMixin {
     @Shadow
     private ServerPlayer player;
 
-    @Inject(method = "award", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerAdvancements;unregisterListeners(Lnet/minecraft/advancements/Advancement;)V"), locals = LocalCapture.CAPTURE_FAILHARD)
-    private void checkOriginUpgrade(Advancement advancement, String criterionName, CallbackInfoReturnable<Boolean> info, boolean bl, AdvancementProgress advancementProgress, boolean bl2) {
+    @Inject(method = "award", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerAdvancements;unregisterListeners(Lnet/minecraft/advancements/AdvancementHolder;)V"), locals = LocalCapture.CAPTURE_FAILHARD)
+    private void checkOriginUpgrade(AdvancementHolder advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir, boolean bl, AdvancementProgress advancementProgress, boolean bl2) {
         if(advancementProgress.isDone()) {
             Origin.get(player).forEach((layer, o) -> {
                 Optional<OriginUpgrade> upgrade = o.getUpgrade(advancement);

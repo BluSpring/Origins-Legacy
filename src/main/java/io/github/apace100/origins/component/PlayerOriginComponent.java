@@ -12,6 +12,8 @@ import io.github.apace100.origins.util.ChoseOriginCriterion;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -96,7 +98,7 @@ public class PlayerOriginComponent implements OriginComponent {
     }
 
     @Override
-    public void readFromNbt(CompoundTag compoundTag) {
+    public void readFromNbt(CompoundTag compoundTag, HolderLookup.Provider registries) {
         if(player == null) {
             Origins.LOGGER.error("Player was null in `fromTag`! This is a bug!");
         }
@@ -105,8 +107,8 @@ public class PlayerOriginComponent implements OriginComponent {
 
         if(compoundTag.contains("Origin")) {
             try {
-                OriginLayer defaultOriginLayer = OriginLayers.getLayer(new ResourceLocation(Origins.MODID, "origin"));
-                this.origins.put(defaultOriginLayer, OriginRegistry.get(ResourceLocation.tryParse(compoundTag.getString("Origin"))));
+                OriginLayer defaultOriginLayer = OriginLayers.getLayer(ResourceLocation.fromNamespaceAndPath(Origins.MODID, "origin"));
+                this.origins.put(defaultOriginLayer, OriginRegistry.get(ResourceLocation.tryParse(compoundTag.getString("Origin").orElseThrow())));
             } catch(IllegalArgumentException e) {
                 Origins.LOGGER.warn("Player " + player.getDisplayName().getContents() + " had old origin which could not be migrated: " + compoundTag.getString("Origin"));
             }
@@ -114,8 +116,8 @@ public class PlayerOriginComponent implements OriginComponent {
             ListTag originLayerList = (ListTag) compoundTag.get("OriginLayers");
             if(originLayerList != null) {
                 for(int i = 0; i < originLayerList.size(); i++) {
-                    CompoundTag layerTag = originLayerList.getCompound(i);
-                    ResourceLocation layerId = ResourceLocation.tryParse(layerTag.getString("Layer"));
+                    CompoundTag layerTag = originLayerList.getCompound(i).orElseThrow();
+                    ResourceLocation layerId = ResourceLocation.tryParse(layerTag.getString("Layer").orElseThrow());
                     OriginLayer layer = null;
                     try {
                         layer = OriginLayers.getLayer(layerId);
@@ -123,7 +125,7 @@ public class PlayerOriginComponent implements OriginComponent {
                         Origins.LOGGER.warn("Could not find origin layer with id " + layerId.toString() + ", which existed on the data of player " + player.getDisplayName().getContents() + ".");
                     }
                     if(layer != null) {
-                        ResourceLocation originId = ResourceLocation.tryParse(layerTag.getString("Origin"));
+                        ResourceLocation originId = ResourceLocation.tryParse(layerTag.getString("Origin").orElseThrow());
                         Origin origin = null;
                         try {
                             origin = OriginRegistry.get(originId);
@@ -145,7 +147,7 @@ public class PlayerOriginComponent implements OriginComponent {
                 }
             }
         }
-        this.hadOriginBefore = compoundTag.getBoolean("HadOriginBefore");
+        this.hadOriginBefore = compoundTag.getBoolean("HadOriginBefore").orElse(false);
 
         if(!player.level().isClientSide) {
             PowerHolderComponent powerComponent = PowerHolderComponent.KEY.get(player);
@@ -164,14 +166,14 @@ public class PlayerOriginComponent implements OriginComponent {
             if(compoundTag.contains("Powers")) {
                 ListTag powerList = (ListTag) compoundTag.get("Powers");
                 for(int i = 0; i < powerList.size(); i++) {
-                    CompoundTag powerTag = powerList.getCompound(i);
-                    ResourceLocation powerTypeId = ResourceLocation.tryParse(powerTag.getString("Type"));
+                    CompoundTag powerTag = powerList.getCompound(i).orElseThrow();
+                    ResourceLocation powerTypeId = ResourceLocation.tryParse(powerTag.getString("Type").orElseThrow());
                     try {
                         PowerType<?> type = PowerTypeRegistry.get(powerTypeId);
                         if(powerComponent.hasPower(type)) {
                             Tag data = powerTag.get("Data");
                             try {
-                                powerComponent.getPower(type).fromTag(data);
+                                powerComponent.getPower(type).fromTag(data, registries);
                             } catch(ClassCastException e) {
                                 // Occurs when power was overriden by data pack since last world load
                                 // to be a power type which uses different data class.
@@ -192,7 +194,7 @@ public class PlayerOriginComponent implements OriginComponent {
     }
 
     @Override
-    public void writeToNbt(CompoundTag compoundTag) {
+    public void writeToNbt(CompoundTag compoundTag, HolderLookup.Provider provider) {
         ListTag originLayerList = new ListTag();
         for(Map.Entry<OriginLayer, Origin> entry : origins.entrySet()) {
             CompoundTag layerTag = new CompoundTag();

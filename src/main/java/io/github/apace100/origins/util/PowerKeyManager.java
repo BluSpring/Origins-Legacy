@@ -38,7 +38,7 @@ public class PowerKeyManager {
                     }
                 }
             }
-            return key.equals("none") ? "key.origins.primary_active" : key;
+            return key.equals("none") ? "key.layers.primary_active" : key;
         }
         return "";
     }

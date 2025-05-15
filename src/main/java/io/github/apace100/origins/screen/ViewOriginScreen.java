@@ -12,11 +12,13 @@ import java.util.HashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ResolvableProfile;
 
 public class ViewOriginScreen extends OriginDisplayScreen {
 
@@ -33,8 +35,8 @@ public class ViewOriginScreen extends OriginDisplayScreen {
 		origins.forEach((layer, origin) -> {
 			ItemStack displayItem = origin.getDisplayItem();
 			if(displayItem.getItem() == Items.PLAYER_HEAD) {
-				if(!displayItem.hasTag() || !displayItem.getTag().contains("SkullOwner")) {
-					displayItem.getOrCreateTag().putString("SkullOwner", player.getDisplayName().getString());
+				if(!displayItem.has(DataComponents.PROFILE)) {
+					displayItem.set(DataComponents.PROFILE, new ResolvableProfile(player.getGameProfile()));
 				}
 			}
 			if((origin != Origin.EMPTY || layer.getOriginOptionCount(player) > 0) && !layer.isHidden()) {

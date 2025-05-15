@@ -1,7 +1,9 @@
 package io.github.apace100.origins.content;
 
 import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.component.OriginTargetsComponent;
 import io.github.apace100.origins.networking.ModPackets;
+import io.github.apace100.origins.networking.OpenOriginScreenPacket;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
@@ -20,18 +22,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.*;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class OrbOfOriginItem extends Item {
 
@@ -40,7 +44,7 @@ public class OrbOfOriginItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
         ItemStack stack = user.getItemInHand(hand);
         if(!world.isClientSide) {
             OriginComponent component = ModComponents.ORIGIN.get(user);
@@ -58,25 +62,23 @@ public class OrbOfOriginItem extends Item {
             }
             component.checkAutoChoosingLayers(user, false);
             component.sync();
-            FriendlyByteBuf data = new FriendlyByteBuf(Unpooled.buffer());
-            data.writeBoolean(false);
-            ServerPlayNetworking.send((ServerPlayer) user, ModPackets.OPEN_ORIGIN_SCREEN, data);
+            ServerPlayNetworking.send((ServerPlayer) user, new OpenOriginScreenPacket(false));
         }
         if(!user.isCreative()) {
             stack.shrink(1);
         }
-        return InteractionResultHolder.consume(stack);
+        return InteractionResult.CONSUME;
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
         Map<OriginLayer, Origin> targets = getTargets(stack);
         for(Map.Entry<OriginLayer, Origin> target : targets.entrySet()) {
             if(target.getValue() == Origin.EMPTY) {
-                tooltip.add(Component.translatable("item.origins.orb_of_origin.layer_generic",
+                tooltipAdder.accept(Component.translatable("item.origins.orb_of_origin.layer_generic",
                     Component.translatable(target.getKey().getTranslationKey())).withStyle(ChatFormatting.GRAY));
             } else {
-                tooltip.add(Component.translatable("item.origins.orb_of_origin.layer_specific",
+                tooltipAdder.accept(Component.translatable("item.origins.orb_of_origin.layer_specific",
                     Component.translatable(target.getKey().getTranslationKey()),
                     target.getValue().getName()).withStyle(ChatFormatting.GRAY));
             }
@@ -85,32 +87,16 @@ public class OrbOfOriginItem extends Item {
 
     private Map<OriginLayer, Origin> getTargets(ItemStack stack) {
         HashMap<OriginLayer, Origin> targets = new HashMap<>();
-        if(!stack.hasTag()) {
+        if(!stack.has(OriginTargetsComponent.TYPE)) {
             return targets;
         }
-        CompoundTag nbt = stack.getTag();
-        if(!nbt.contains("Targets", NbtType.LIST)) {
-            return targets;
-        }
-        ListTag targetList = (ListTag)nbt.get("Targets");
-        for (Tag nbtElement : targetList) {
-            if(nbtElement instanceof CompoundTag targetNbt) {
-                if(targetNbt.contains("Layer", NbtType.STRING)) {
-                    try {
-                        ResourceLocation id = new ResourceLocation(targetNbt.getString("Layer"));
-                        OriginLayer layer = OriginLayers.getLayer(id);
-                        Origin origin = Origin.EMPTY;
-                        if(targetNbt.contains("Origin", NbtType.STRING)) {
-                            ResourceLocation originId = new ResourceLocation(targetNbt.getString("Origin"));
-                            origin = OriginRegistry.get(originId);
-                        }
-                        if(layer.isEnabled() && (layer.contains(origin) || origin.isSpecial())) {
-                            targets.put(layer, origin);
-                        }
-                    } catch (Exception e) {
-                        // no op
-                    }
-                }
+        var targetList = stack.get(OriginTargetsComponent.TYPE).targets();
+        for (OriginTargetsComponent.OriginTarget target : targetList) {
+            OriginLayer layer = OriginLayers.getLayer(target.layer());
+            Origin origin = target.origin().map(OriginRegistry::get).orElse(Origin.EMPTY);
+
+            if (layer.isEnabled() && (layer.contains(origin) || origin.isSpecial())) {
+                targets.put(layer, origin);
             }
         }
         return targets;

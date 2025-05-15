@@ -31,6 +31,6 @@ public abstract class ScareCreepersMixin extends Monster {
 
     @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/goal/GoalSelector;addGoal(ILnet/minecraft/world/entity/ai/goal/Goal;)V", ordinal = 8), method = "registerGoals")
     private Goal redirectTargetGoal(Goal original) {
-        return new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, e -> !OriginsPowerTypes.SCARE_CREEPERS.isActive(e));
+        return new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, (e, l) -> !OriginsPowerTypes.SCARE_CREEPERS.isActive(e));
     }
 }

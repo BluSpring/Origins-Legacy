@@ -15,9 +15,12 @@ import io.github.apace100.origins.registry.ModComponents;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -30,6 +33,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Origin {
+    public static final StreamCodec<RegistryFriendlyByteBuf, Origin> STREAM_CODEC = StreamCodec.of((buf, value) -> value.write(buf), Origin::read);
 
     public static final SerializableData DATA = new SerializableData()
         .add("powers", SerializableDataTypes.IDENTIFIERS, Lists.newArrayList())
@@ -45,7 +49,7 @@ public class Origin {
     public static final Origin EMPTY;
 
     static {
-        EMPTY = register(new Origin(new ResourceLocation(Origins.MODID, "empty"), new ItemStack(Items.AIR), Impact.NONE, -1, Integer.MAX_VALUE).setUnchoosable().setSpecial());
+        EMPTY = register(new Origin(ResourceLocation.fromNamespaceAndPath(Origins.MODID, "empty"), new ItemStack(Items.AIR), Impact.NONE, -1, Integer.MAX_VALUE).setUnchoosable().setSpecial());
     }
 
     public static void init() {
@@ -99,9 +103,9 @@ public class Origin {
         return this.upgrades.size() > 0;
     }
 
-    public Optional<OriginUpgrade> getUpgrade(Advancement advancement) {
+    public Optional<OriginUpgrade> getUpgrade(AdvancementHolder advancement) {
         for(OriginUpgrade upgrade : upgrades) {
-            if(upgrade.getAdvancementCondition().equals(advancement.getId())) {
+            if(upgrade.getAdvancementCondition().equals(advancement.id())) {
                 return Optional.of(upgrade);
             }
         }
@@ -210,7 +214,7 @@ public class Origin {
         return this.order;
     }
 
-    public void write(FriendlyByteBuf buffer) {
+    public void write(RegistryFriendlyByteBuf buffer) {
         SerializableData.Instance data = DATA.new Instance();
         data.set("icon", displayItem);
         data.set("impact", impact);
@@ -256,7 +260,7 @@ public class Origin {
     }
 
     @Environment(EnvType.CLIENT)
-    public static Origin read(FriendlyByteBuf buffer) {
+    public static Origin read(RegistryFriendlyByteBuf buffer) {
         ResourceLocation identifier = ResourceLocation.tryParse(buffer.readUtf(32767));
         return createFromData(identifier, DATA.read(buffer));
     }

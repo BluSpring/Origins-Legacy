@@ -12,6 +12,6 @@ public class ModItems {
     public static final Item ORB_OF_ORIGIN = new OrbOfOriginItem();
 
     public static void register() {
-        Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(Origins.MODID, "orb_of_origin"), ORB_OF_ORIGIN);
+        Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Origins.MODID, "orb_of_origin"), ORB_OF_ORIGIN);
     }
 }
