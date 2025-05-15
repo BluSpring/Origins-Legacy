@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,7 +20,7 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 
 	public OriginManager() {
-		super(GSON, "layers");
+		super(GSON, "origins");
 	}
 
 	@Override
@@ -65,7 +66,7 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 
 	@Override
 	public ResourceLocation getFabricId() {
-		return ResourceLocation.fromNamespaceAndPath(Origins.MODID, "layers");
+		return ResourceLocation.fromNamespaceAndPath(Origins.MODID, "origins");
 	}
 
 	@Override

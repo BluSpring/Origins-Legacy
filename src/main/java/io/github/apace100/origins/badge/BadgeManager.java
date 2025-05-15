@@ -136,15 +136,15 @@ public final class BadgeManager {
                 badgeList.add(REGISTRY.get(autoBadgeId));
             } else {
                 badgeList.add(new KeybindBadge(toggle ? TOGGLE_BADGE_SPRITE : ACTIVE_BADGE_SPRITE,
-                    toggle ? "layers.gui.badge.toggle"
-                        : "layers.gui.badge.active"
+                    toggle ? "origins.gui.badge.toggle"
+                        : "origins.gui.badge.active"
                 ));
             }
         } else if(power instanceof RecipePower recipePower) {
             Recipe<CraftingInput> recipe = recipePower.getRecipe();
             String type = recipe instanceof ShapedRecipe ? "shaped" : "shapeless";
             badgeList.add(new CraftingRecipeBadge(RECIPE_BADGE_SPRITE, recipe,
-                Component.translatable("layers.gui.badge.recipe.crafting." + type), null
+                Component.translatable("origins.gui.badge.recipe.crafting." + type), null
             ));
         }
     }

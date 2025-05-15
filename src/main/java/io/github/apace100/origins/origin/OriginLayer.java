@@ -9,13 +9,13 @@ import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -156,8 +156,8 @@ public class OriginLayer implements Comparable<OriginLayer> {
         if(json.has("enabled")) {
             this.enabled = json.get("enabled").getAsBoolean();
         }
-        if(json.has("layers")) {
-            JsonArray originArray = json.getAsJsonArray("layers");
+        if(json.has("origins")) {
+            JsonArray originArray = json.getAsJsonArray("origins");
             originArray.forEach(je -> this.conditionedOrigins.add(ConditionedOrigin.read(je)));
         }
         if(json.has("name")) {
@@ -290,10 +290,10 @@ public class OriginLayer implements Comparable<OriginLayer> {
 
     public static OriginLayer fromJson(ResourceLocation id, JsonObject json) {
         int order = GsonHelper.getAsInt(json, "order", OriginLayers.size());
-        if(!json.has("layers") || !json.get("layers").isJsonArray()) {
-            throw new JsonParseException("Origin layer JSON requires \"layers\" array of origin IDs to include in the layer.");
+        if(!json.has("origins") || !json.get("origins").isJsonArray()) {
+            throw new JsonParseException("Origin layer JSON requires \"origins\" array of origin IDs to include in the layer.");
         }
-        JsonArray originArray = json.getAsJsonArray("layers");
+        JsonArray originArray = json.getAsJsonArray("origins");
         List<ConditionedOrigin> list = new ArrayList<>(originArray.size());
         originArray.forEach(je -> list.add(ConditionedOrigin.read(je)));
         boolean enabled = GsonHelper.getAsBoolean(json, "enabled", true);
@@ -349,7 +349,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
         }
         private static final SerializableData conditionedOriginObjectData = new SerializableData()
             .add("condition", ApoliDataTypes.ENTITY_CONDITION)
-            .add("layers", SerializableDataTypes.IDENTIFIERS);
+            .add("origins", SerializableDataTypes.IDENTIFIERS);
 
         public void write(RegistryFriendlyByteBuf buffer) {
             buffer.writeBoolean(condition != null);
@@ -383,7 +383,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
                 throw new JsonParseException("Expected origin in layer to be either a string or an object.");
             } else if(element.isJsonObject()) {
                 SerializableData.Instance data = conditionedOriginObjectData.read(element.getAsJsonObject());
-                return new ConditionedOrigin((ConditionFactory<Entity>.Instance)data.get("condition"), (List<ResourceLocation>)data.get("layers"));
+                return new ConditionedOrigin(data.get("condition"), data.get("origins"));
             }
             throw new JsonParseException("Expected origin in layer to be either a string or an object.");
         }

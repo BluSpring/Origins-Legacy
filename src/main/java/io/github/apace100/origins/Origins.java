@@ -43,7 +43,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Origins implements ModInitializer, OrderedResourceListenerInitializer {
 
-	public static final String MODID = "layers";
+	public static final String MODID = "origins";
 	public static String VERSION = "";
 	public static int[] SEMVER;
 	public static final Logger LOGGER = LogManager.getLogger(Origins.class);
@@ -118,7 +118,7 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 	@Override
 	public void registerResourceListeners(OrderedResourceListenerManager manager) {
 		ResourceLocation powerData = Apoli.identifier("powers");
-		ResourceLocation originData = Origins.identifier("layers");
+		ResourceLocation originData = Origins.identifier("origins");
 
 		OriginManager originLoader = new OriginManager();
 		manager.register(PackType.SERVER_DATA, originLoader).after(powerData).complete();

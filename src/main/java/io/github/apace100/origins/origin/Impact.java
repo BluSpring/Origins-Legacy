@@ -16,7 +16,7 @@ public enum Impact {
 	private ChatFormatting textStyle;
 
 	private Impact(int impactValue, String translationKey, ChatFormatting textStyle) {
-		this.translationKey = "layers.gui.impact." + translationKey;
+		this.translationKey = "origins.gui.impact." + translationKey;
 		this.impactValue = impactValue;
 		this.textStyle = textStyle;
 	}

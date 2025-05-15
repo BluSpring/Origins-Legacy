@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -101,6 +102,6 @@ public class OriginLayers extends MultiJsonDataLoader implements IdentifiableRes
 
     @Override
     public Collection<ResourceLocation> getFabricDependencies() {
-        return Set.of(Origins.identifier("layers"));
+        return Set.of(Origins.identifier("origins"));
     }
 }
