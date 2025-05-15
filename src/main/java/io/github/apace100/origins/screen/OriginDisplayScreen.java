@@ -1,6 +1,5 @@
 package io.github.apace100.origins.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.badge.Badge;
@@ -9,8 +8,6 @@ import io.github.apace100.origins.mixin.DrawContextAccessor;
 import io.github.apace100.origins.origin.Impact;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
-import java.util.LinkedList;
-import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -25,6 +22,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class OriginDisplayScreen extends Screen {
 
@@ -81,7 +81,9 @@ public class OriginDisplayScreen extends Screen {
     @Override
     public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         if(showDirtBackground) {
-            super.renderMenuBackground(guiGraphics);
+            renderMenuBackgroundTexture(guiGraphics, ResourceLocation.withDefaultNamespace("textures/block/dirt.png"), 0, 0, 0.0F, 0.0F, width, height); // Use the dirt texture as a fallback
+            renderTransparentBackground(guiGraphics);
+            renderMenuBackground(guiGraphics); // If the player has a menu background, render that as an overlay I guess?
         } else {
             super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
         }
