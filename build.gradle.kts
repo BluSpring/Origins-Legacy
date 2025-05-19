@@ -34,6 +34,7 @@ repositories {
 	maven("https://maven.shedaniel.me/")
 	maven("https://maven.terraformersmc.com/")
 	mavenLocal()
+	mavenCentral()
 }
 
 dependencies {
@@ -67,6 +68,8 @@ dependencies {
 	}
 
 	modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
+
+	include(implementation("com.moulberry:mixinconstraints:1.0.8")!!)
 }
 
 tasks.processResources {

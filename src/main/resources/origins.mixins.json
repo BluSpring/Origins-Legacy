@@ -16,11 +16,13 @@
     "WaterBreathingMixin$UpdateAir"
   ],
   "client": [
+    "DebugContextMixin",
     "DrawContextAccessor",
     "ServerCheckMixin",
     "WaterVisibilityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin"
 }
