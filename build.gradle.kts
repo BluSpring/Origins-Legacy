@@ -1,3 +1,5 @@
+import net.fabricmc.loom.task.RemapJarTask
+
 plugins {
 	id("fabric-loom") version "1.10-SNAPSHOT"
 	`maven-publish`
@@ -7,13 +9,19 @@ base {
 	archivesName.set(project.property("archives_base_name") as String)
 }
 
-version = project.property("mod_version") as String
+version = "${project.property("mod_version")}+${project.property("minecraft_version")}"
 group = project.property("maven_group") as String
 
 allprojects {
 	repositories {
 		maven("https://maven.parchmentmc.org")
 	}
+}
+
+subprojects {
+	apply(plugin = "fabric-loom")
+
+	rootProject.tasks.getByName<RemapJarTask>("remapJar").nestedJars.from(project.tasks.getByName("remapJar"))
 }
 
 repositories {
@@ -51,14 +59,6 @@ dependencies {
 
 	implementation(project(":apoli", "namedElements"))
 	implementation(project(":calio", "namedElements"))
-
-	include(project(":apoli", "transformProductionFabric")) {
-		isTransitive = false
-	}
-
-	include(project(":calio", "transformProductionFabric")) {
-		isTransitive = false
-	}
 
 	modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${property("cca_version")}")
 	modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")
