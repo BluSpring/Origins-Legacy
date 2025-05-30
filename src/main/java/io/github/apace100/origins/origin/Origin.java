@@ -16,6 +16,7 @@ import io.netty.buffer.ByteBuf;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -297,8 +298,8 @@ public class Origin {
         return createFromData(identifier, DATA.read(buffer));
     }
 
-    public static Origin fromJson(ResourceLocation id, JsonObject json) {
-        return createFromData(id, DATA.read(json));
+    public static Origin fromJson(ResourceLocation id, JsonObject json, HolderLookup.Provider provider) {
+        return createFromData(id, DATA.read(json, provider));
     }
 
     @Override

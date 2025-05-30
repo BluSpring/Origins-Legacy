@@ -8,6 +8,7 @@ import io.github.apace100.calio.data.MultiJsonDataLoader;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.integration.OriginDataLoadedCallback;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
@@ -23,8 +24,11 @@ public class OriginLayers extends MultiJsonDataLoader implements IdentifiableRes
 
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 
-    public OriginLayers() {
+    private final HolderLookup.Provider provider;
+
+    public OriginLayers(HolderLookup.Provider provider) {
         super(GSON, "origin_layers");
+        this.provider = provider;
     }
 
     @Override
@@ -62,9 +66,9 @@ public class OriginLayers extends MultiJsonDataLoader implements IdentifiableRes
             for(Integer key : keys) {
                 for(JsonObject jo : layerToLoad.getValue().get(key)) {
                     if(layer == null) {
-                        layer = OriginLayer.fromJson(layerId, jo);
+                        layer = OriginLayer.fromJson(layerId, jo, this.provider);
                     } else {
-                        layer.merge(jo);
+                        layer.merge(jo, this.provider);
                     }
                 }
             }

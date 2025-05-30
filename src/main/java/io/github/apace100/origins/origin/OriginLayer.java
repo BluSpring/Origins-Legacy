@@ -9,6 +9,7 @@ import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -149,7 +150,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
         return conditionedOrigins.stream().filter(co -> co.isConditionFulfilled(playerEntity)).flatMap(co -> co.getOrigins().stream()).filter(OriginRegistry::contains).filter(o -> !originsExcludedFromRandom.contains(o)).filter(id -> doesRandomAllowUnchoosable || OriginRegistry.get(id).isChoosable()).collect(Collectors.toList());
     }
 
-    public void merge(JsonObject json) {
+    public void merge(JsonObject json, HolderLookup.Provider provider) {
         if(json.has("order")) {
             this.order = json.get("order").getAsInt();
         }
@@ -158,7 +159,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
         }
         if(json.has("origins")) {
             JsonArray originArray = json.getAsJsonArray("origins");
-            originArray.forEach(je -> this.conditionedOrigins.add(ConditionedOrigin.read(je)));
+            originArray.forEach(je -> this.conditionedOrigins.add(ConditionedOrigin.read(je, provider)));
         }
         if(json.has("name")) {
             this.nameTranslationKey = GsonHelper.getAsString(json, "name", "");
@@ -288,14 +289,14 @@ public class OriginLayer implements Comparable<OriginLayer> {
         return layer;
     }
 
-    public static OriginLayer fromJson(ResourceLocation id, JsonObject json) {
+    public static OriginLayer fromJson(ResourceLocation id, JsonObject json, HolderLookup.Provider provider) {
         int order = GsonHelper.getAsInt(json, "order", OriginLayers.size());
         if(!json.has("origins") || !json.get("origins").isJsonArray()) {
             throw new JsonParseException("Origin layer JSON requires \"origins\" array of origin IDs to include in the layer.");
         }
         JsonArray originArray = json.getAsJsonArray("origins");
         List<ConditionedOrigin> list = new ArrayList<>(originArray.size());
-        originArray.forEach(je -> list.add(ConditionedOrigin.read(je)));
+        originArray.forEach(je -> list.add(ConditionedOrigin.read(je, provider)));
         boolean enabled = GsonHelper.getAsBoolean(json, "enabled", true);
         OriginLayer layer = new OriginLayer();
         layer.order = order;
@@ -374,7 +375,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
         }
 
         @SuppressWarnings("unchecked")
-        public static ConditionedOrigin read(JsonElement element) {
+        public static ConditionedOrigin read(JsonElement element, HolderLookup.Provider provider) {
             if(element.isJsonPrimitive()) {
                 JsonPrimitive elemPrimitive = element.getAsJsonPrimitive();
                 if(elemPrimitive.isString()) {
@@ -382,7 +383,7 @@ public class OriginLayer implements Comparable<OriginLayer> {
                 }
                 throw new JsonParseException("Expected origin in layer to be either a string or an object.");
             } else if(element.isJsonObject()) {
-                SerializableData.Instance data = conditionedOriginObjectData.read(element.getAsJsonObject());
+                SerializableData.Instance data = conditionedOriginObjectData.read(element.getAsJsonObject(), provider);
                 return new ConditionedOrigin(data.get("condition"), data.get("origins"));
             }
             throw new JsonParseException("Expected origin in layer to be either a string or an object.");

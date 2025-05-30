@@ -8,6 +8,7 @@ import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.calio.data.MultiJsonDataLoader;
 import io.github.apace100.origins.Origins;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -19,8 +20,11 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 	
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 
-	public OriginManager() {
+	private final HolderLookup.Provider provider;
+
+	public OriginManager(HolderLookup.Provider provider) {
 		super(GSON, "origins");
+		this.provider = provider;
 	}
 
 	@Override
@@ -30,7 +34,7 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 		loader.forEach((id, jel) -> {
 			jel.forEach(je -> {
 				try {
-					Origin origin = Origin.fromJson(id, je.getAsJsonObject());
+					Origin origin = Origin.fromJson(id, je.getAsJsonObject(), this.provider);
 					if(!OriginRegistry.contains(id)) {
 						OriginRegistry.register(id, origin);
 					} else {

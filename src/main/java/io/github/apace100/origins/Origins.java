@@ -31,6 +31,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -101,6 +102,9 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 
 		Registry.register(BuiltInRegistries.TRIGGER_TYPES, Origins.identifier("choose_origin"), ChoseOriginCriterion.INSTANCE);
 		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Origins.identifier("origin_targets"), OriginTargetsComponent.TYPE);
+
+		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(identifier("origins"), OriginManager::new);
+		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(identifier("origin_layers"), OriginLayers::new);
 	}
 
 	public static void serializeConfig() {
@@ -120,9 +124,8 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 		ResourceLocation powerData = Apoli.identifier("powers");
 		ResourceLocation originData = Origins.identifier("origins");
 
-		OriginManager originLoader = new OriginManager();
-		manager.register(PackType.SERVER_DATA, originLoader).after(powerData).complete();
-		manager.register(PackType.SERVER_DATA, new OriginLayers()).after(originData).complete();
+		manager.registerWithRegistries(originData, OriginManager::new).after(powerData).complete();
+		manager.registerWithRegistries(Origins.identifier("origin_layers"), OriginLayers::new).after(originData).complete();
 
 		BadgeManager.init();
 

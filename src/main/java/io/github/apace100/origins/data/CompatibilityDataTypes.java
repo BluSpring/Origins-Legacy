@@ -9,11 +9,11 @@ public final class CompatibilityDataTypes {
 
 
     public static final SerializableDataType<ItemStack> ITEM_OR_ITEM_STACK = new SerializableDataType<>(ItemStack.class,
-        SerializableDataTypes.ITEM_STACK::send, SerializableDataTypes.ITEM_STACK::receive, jsonElement -> {
+        SerializableDataTypes.ITEM_STACK::send, SerializableDataTypes.ITEM_STACK::receive, (jsonElement, provider) -> {
         if(jsonElement.isJsonPrimitive() && jsonElement.getAsJsonPrimitive().isString()) {
-            Item item = SerializableDataTypes.ITEM.read(jsonElement);
+            Item item = SerializableDataTypes.ITEM.read(jsonElement, provider);
             return new ItemStack(item);
         }
-        return SerializableDataTypes.ITEM_STACK.read(jsonElement);
+        return SerializableDataTypes.ITEM_STACK.read(jsonElement, provider);
     });
 }
