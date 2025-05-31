@@ -191,7 +191,7 @@ public class OriginDisplayScreen extends Screen {
             this.renderOriginContent(context, mouseX, mouseY);
             //context.disableScissor();
         }
-        context.blit(RenderType::guiTextured, WINDOW, guiLeft, guiTop, 1, 0, windowWidth, windowWidth, windowWidth, windowHeight, 256, 256);
+        context.blit(RenderType::guiTextured, WINDOW, guiLeft, guiTop, 0, 0, windowWidth, windowWidth, windowWidth, windowHeight, 256, 256);
         if(origin != null) {
             context.pose().pushPose();
             context.pose().translate(0, 0, 5);
@@ -262,7 +262,7 @@ public class OriginDisplayScreen extends Screen {
 
         Origin origin = getCurrentOrigin();
         int x = guiLeft + 18;
-        int y = guiTop + 50;
+        int y = guiTop + 45;
         int startY = y;
         int endY = y - 72 + windowHeight;
         y -= scrollPos;
@@ -318,7 +318,7 @@ public class OriginDisplayScreen extends Screen {
             }
         }
         y += scrollPos;
-        currentMaxScroll = y - 14 - (guiTop + 158);
+        currentMaxScroll = y - 14 - (guiTop + 158) + 10;
         if(currentMaxScroll < 0) {
             currentMaxScroll = 0;
         }
