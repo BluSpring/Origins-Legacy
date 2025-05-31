@@ -302,7 +302,7 @@ public class OriginDisplayScreen extends Screen {
                     for(Badge badge : badges) {
                         RenderedBadge renderedBadge = new RenderedBadge(p, badge,xStart + 10 * bi, y - 1);
                         renderedBadges.add(renderedBadge);
-                        context.blit(RenderType::guiTextured, badge.spriteId(), xStart + 10 * bi, y - 1, 0, 0, 9, 9, 9, 9, 256, 256);
+                        context.blit(RenderType::guiTextured, badge.spriteId(), xStart + 10 * bi, y - 1, 0, 0, 9, 9, 9, 9, 9, 9);
                         bi++;
                     }
                 }
