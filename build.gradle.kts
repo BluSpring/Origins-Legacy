@@ -15,6 +15,16 @@ group = project.property("maven_group") as String
 allprojects {
 	repositories {
 		maven("https://maven.parchmentmc.org")
+		exclusiveContent {
+			forRepository {
+				maven("https://api.modrinth.com/maven") {
+					name = "Modrinth"
+				}
+			}
+			filter {
+				includeGroup("maven.modrinth")
+			}
+		}
 	}
 }
 

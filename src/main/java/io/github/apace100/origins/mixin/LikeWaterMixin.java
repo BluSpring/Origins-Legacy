@@ -10,7 +10,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LivingEntity.class)
 public abstract class LikeWaterMixin extends Entity {
@@ -19,7 +18,7 @@ public abstract class LikeWaterMixin extends Entity {
         super(type, world);
     }
 
-    @WrapOperation(method = "travelInFluid", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getFluidFallingAdjustedMovement(DZLnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;"))
+    @WrapOperation(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getFluidFallingAdjustedMovement(DZLnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;"))
     public Vec3 method_26317Proxy(LivingEntity instance, double gravity, boolean isFalling, Vec3 deltaMovement, Operation<Vec3> original) {
         Vec3 oldReturn = original.call(instance, gravity, isFalling, deltaMovement);
         if(OriginsPowerTypes.LIKE_WATER.isActive(this)) {

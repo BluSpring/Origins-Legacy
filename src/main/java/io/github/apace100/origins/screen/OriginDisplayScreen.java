@@ -1,5 +1,6 @@
 package io.github.apace100.origins.screen;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.badge.Badge;
@@ -14,7 +15,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -105,7 +105,7 @@ public class OriginDisplayScreen extends Screen {
         if(!canScroll()) {
             return;
         }
-        context.blit(RenderType::guiTextured, WINDOW, guiLeft + 155, guiTop + 35, 188, 24, 8, 134, 256, 256);
+        context.blit(WINDOW, guiLeft + 155, guiTop + 35, 188, 24, 8, 134);
         int scrollbarY = 36;
         int maxScrollbarOffset = 141;
         int u = 176;
@@ -118,7 +118,7 @@ public class OriginDisplayScreen extends Screen {
                 u += 6;
             }
         }
-        context.blit(RenderType::guiTextured, WINDOW, guiLeft + 156, guiTop + scrollbarY, u, 24, 6, 27, 256, 256);
+        context.blit(WINDOW, guiLeft + 156, guiTop + scrollbarY, u, 24, 6, 27);
     }
 
     private boolean scrolling = false;
@@ -169,12 +169,12 @@ public class OriginDisplayScreen extends Screen {
     private void renderBadgeTooltip(GuiGraphics context, int mouseX, int mouseY) {
         for(RenderedBadge rb : renderedBadges) {
             if(mouseX >= rb.x &&
-               mouseX < rb.x + 9 &&
-               mouseY >= rb.y &&
-               mouseY < rb.y + 9 &&
-               rb.hasTooltip()) {
+                mouseX < rb.x + 9 &&
+                mouseY >= rb.y &&
+                mouseY < rb.y + 9 &&
+                rb.hasTooltip()) {
                 int widthLimit = width - mouseX - 24;
-                ((DrawContextAccessor)context).invokeRenderTooltipInternal(font, rb.getTooltipComponents(font, widthLimit), mouseX, mouseY, DefaultTooltipPositioner.INSTANCE, null);
+                ((DrawContextAccessor)context).invokeRenderTooltipInternal(font, rb.getTooltipComponents(font, widthLimit), mouseX, mouseY, DefaultTooltipPositioner.INSTANCE);
             }
         }
     }
@@ -184,25 +184,25 @@ public class OriginDisplayScreen extends Screen {
     }
 
     private void renderOriginWindow(GuiGraphics context, int mouseX, int mouseY) {
-        //RenderSystem.enableBlend();
+        RenderSystem.enableBlend();
         renderWindowBackground(context, 16, 0);
         if(origin != null) {
             //context.enableScissor(guiLeft, guiTop, guiLeft + windowWidth, guiTop + windowHeight);
             this.renderOriginContent(context, mouseX, mouseY);
             //context.disableScissor();
         }
-        context.blit(RenderType::guiTextured, WINDOW, guiLeft, guiTop, 0, 0, windowWidth, windowWidth, windowWidth, windowHeight, 256, 256);
+        context.blit(WINDOW, guiLeft, guiTop, 1, 0, 0, windowWidth, windowHeight, 256, 256);
         if(origin != null) {
             context.pose().pushPose();
             context.pose().translate(0, 0, 5);
             renderOriginName(context);
-            //RenderSystem.setShaderTexture(0, WINDOW);
+            RenderSystem.setShaderTexture(0, WINDOW);
             this.renderOriginImpact(context, mouseX, mouseY);
             context.pose().popPose();
             Component title = getTitleText();
             context.drawCenteredString(this.font, title.getString(), width / 2, guiTop - 15, 0xFFFFFF);
         }
-        //RenderSystem.disableBlend();
+        RenderSystem.disableBlend();
     }
 
     private void renderOriginImpact(GuiGraphics context, int mouseX, int mouseY) {
@@ -211,9 +211,9 @@ public class OriginDisplayScreen extends Screen {
         int wOffset = impactValue * 8;
         for(int i = 0; i < 3; i++) {
             if(i < impactValue) {
-                context.blit(RenderType::guiTextured, WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth + wOffset, 16, 8, 8, 256, 256);
+                context.blit(WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth + wOffset, 16, 8, 8);
             } else {
-                context.blit(RenderType::guiTextured, WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth, 16, 8, 8, 256, 256);
+                context.blit(WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth, 16, 8, 8);
             }
         }
         if(mouseX >= guiLeft + 128 && mouseX <= guiLeft + 158
@@ -236,7 +236,7 @@ public class OriginDisplayScreen extends Screen {
         int endY = guiTop + windowHeight - border;
         for(int x = guiLeft; x < endX; x += 16) {
             for(int y = guiTop + offsetYStart; y < endY + offsetYEnd; y += 16) {
-                context.blit(RenderType::guiTextured, WINDOW, x, y, windowWidth, 0, Math.max(16, endX - x), Math.max(16, endY + offsetYEnd - y), 256, 256);
+                context.blit(WINDOW, x, y, windowWidth, 0, Math.max(16, endX - x), Math.max(16, endY + offsetYEnd - y));
             }
         }
     }
@@ -262,7 +262,7 @@ public class OriginDisplayScreen extends Screen {
 
         Origin origin = getCurrentOrigin();
         int x = guiLeft + 18;
-        int y = guiTop + 45;
+        int y = guiTop + 50;
         int startY = y;
         int endY = y - 72 + windowHeight;
         y -= scrollPos;
@@ -302,7 +302,7 @@ public class OriginDisplayScreen extends Screen {
                     for(Badge badge : badges) {
                         RenderedBadge renderedBadge = new RenderedBadge(p, badge,xStart + 10 * bi, y - 1);
                         renderedBadges.add(renderedBadge);
-                        context.blit(RenderType::guiTextured, badge.spriteId(), xStart + 10 * bi, y - 1, 0, 0, 9, 9, 9, 9, 9, 9);
+                        context.blit(badge.spriteId(), xStart + 10 * bi, y - 1, 0, 0, 9, 9, 9, 9);
                         bi++;
                     }
                 }
@@ -318,7 +318,7 @@ public class OriginDisplayScreen extends Screen {
             }
         }
         y += scrollPos;
-        currentMaxScroll = y - 14 - (guiTop + 158) + 10;
+        currentMaxScroll = y - 14 - (guiTop + 158);
         if(currentMaxScroll < 0) {
             currentMaxScroll = 0;
         }

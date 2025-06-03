@@ -4,8 +4,6 @@ import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.content.TemporaryCobwebBlock;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -17,7 +15,6 @@ public class ModBlocks {
 
     public static final Block TEMPORARY_COBWEB = new TemporaryCobwebBlock(BlockBehaviour.Properties.of()
         .mapColor(MapColor.WOOL).forceSolidOn().noCollission().requiresCorrectToolForDrops().strength(4.0F)
-        .setId(ResourceKey.create(Registries.BLOCK, Origins.identifier("temporary_cobweb")))
     );
 
     public static void register() {

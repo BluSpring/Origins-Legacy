@@ -3,9 +3,7 @@ package io.github.apace100.origins.entity;
 import io.github.apace100.origins.registry.ModEntities;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -13,12 +11,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.HitResult;
-import org.jetbrains.annotations.Nullable;
 
 public class EnderianPearlEntity extends ThrowableItemProjectile {
    public EnderianPearlEntity(EntityType<? extends EnderianPearlEntity> entityType, Level world) {
@@ -26,13 +22,12 @@ public class EnderianPearlEntity extends ThrowableItemProjectile {
    }
 
    public EnderianPearlEntity(Level world, LivingEntity owner) {
-      super(ModEntities.ENDERIAN_PEARL, world);
-      this.setOwner(owner);
+      super(ModEntities.ENDERIAN_PEARL, owner, world);
    }
 
    @Environment(EnvType.CLIENT)
    public EnderianPearlEntity(Level world, double x, double y, double z) {
-      super(ModEntities.ENDERIAN_PEARL, x, y, z, world, new ItemStack(Items.ENDER_PEARL));
+      super(ModEntities.ENDERIAN_PEARL, x, y, z, world);
    }
 
    protected Item getDefaultItem() {
@@ -79,19 +74,12 @@ public class EnderianPearlEntity extends ThrowableItemProjectile {
 
    }
 
-   @Nullable
-   @Override
-   public Entity teleport(TeleportTransition teleportTransition) {
-      Entity owner = this.getOwner();
-      Entity entity = super.teleport(teleportTransition);
-      if (owner != null && owner.level().dimension() != teleportTransition.newLevel().dimension()) {
-         this.setOwner(null);
+   public Entity changeDimension(DimensionTransition destination) {
+      Entity entity = this.getOwner();
+      if (entity != null && entity.level().dimension() != destination.newLevel().dimension()) {
+         this.setOwner((Entity)null);
       }
 
-      if (entity != null) {
-         entity.placePortalTicket(BlockPos.containing(entity.position()));
-      }
-
-      return entity;
+      return super.changeDimension(destination);
    }
 }

@@ -5,7 +5,6 @@ import io.github.apace100.origins.Origins;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -25,7 +24,7 @@ public class CraftingRecipeTooltipComponent implements ClientTooltipComponent {
     }
 
     @Override
-    public int getHeight(Font font) {
+    public int getHeight() {
         return 68;
     }
 
@@ -35,8 +34,8 @@ public class CraftingRecipeTooltipComponent implements ClientTooltipComponent {
     }
 
     @Override
-    public void renderImage(Font textRenderer, int x, int y, int width, int height, GuiGraphics context) {
-        this.drawBackground(context, x, y, width, height);
+    public void renderImage(Font textRenderer, int x, int y, GuiGraphics context) {
+        this.drawBackground(context, x, y);
         for(int column = 0; column < 3; ++column) {
             for(int row = 0; row < 3; ++row) {
                 int index = column + row * recipeWidth;
@@ -51,9 +50,9 @@ public class CraftingRecipeTooltipComponent implements ClientTooltipComponent {
         context.renderItemDecorations(textRenderer, output, x + 101, y + 25);
     }
 
-    public void drawBackground(GuiGraphics context, int x, int y, int width, int height) {
+    public void drawBackground(GuiGraphics context, int x, int y) {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        context.blit(RenderType::guiTextured, TEXTURE, x, y, 0, 0, 130, 86, 256, 256);
+        context.blit(TEXTURE, x, y, 0, 0, 130, 86, 256, 256);
     }
 
 }
