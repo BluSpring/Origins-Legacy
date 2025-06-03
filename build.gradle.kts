@@ -43,6 +43,16 @@ repositories {
 	maven("https://maven.terraformersmc.com/")
 	mavenLocal()
 	mavenCentral()
+	exclusiveContent {
+		forRepository {
+			maven("https://api.modrinth.com/maven") {
+				name = "Modrinth"
+			}
+		}
+		filter {
+			includeGroup("maven.modrinth")
+		}
+	}
 }
 
 dependencies {
@@ -68,6 +78,7 @@ dependencies {
 	}
 
 	modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
+	modRuntimeOnly("maven.modrinth:lithium:mc1.21.5-0.16.2-fabric")
 
 	include(implementation("com.moulberry:mixinconstraints:1.0.8")!!)
 }
