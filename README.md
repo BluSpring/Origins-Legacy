@@ -7,7 +7,7 @@ The reason why this fork had to occur was due to 3 reasons:
   the Origins datapacks that came prior, requiring extensive changes to support the new versions.
 - Pull requests and issues with the current Origins codebase currently take a long time to be resolved.
   - I have submitted a [pull request](https://github.com/apace100/origins-fabric/pull/801) to fix a bug where the [`origins_server.json` file gets ignored for disabling powers](https://github.com/apace100/origins-fabric/issues/794).
-    The PR was seen a month later, and as of May 11th, it has still not been merged. It is 3 lines of code.
+    The PR was seen a month later, and has only been merged as of June 3rd. It is 3 lines of code.
 - The existing Origins for Forge port is almost impossible to work with as a developer. If you're making an addon mod,
   the existing Forge port does NOT abide by any of the rules you had thought of previously for creating addons. No joke, it was
   easier to use Connector with the Origins mod in order to make a Forge addon compared to trying to learn this entirely different
