@@ -13,8 +13,8 @@
   ],
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/origins",
-    "sources": "https://git.devos.one/BluSpring/origins-legacy",
-    "issues": "https://git.devos.one/BluSpring/origins-legacy/issues"
+    "sources": "https://github.com/BluSpring/origins-legacy",
+    "issues": "https://github.com/BluSpring/origins-legacy/issues"
   },
 
   "license": "MIT",
