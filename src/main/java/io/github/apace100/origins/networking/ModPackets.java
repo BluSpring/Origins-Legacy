@@ -19,6 +19,7 @@ public class ModPackets {
     public static final CustomPacketPayload.Type<ConfirmOriginPacket> CONFIRM_ORIGIN = new CustomPacketPayload.Type<>(Origins.identifier("confirm_origin"));
     //public static final CustomPacketPayload.Type<PlayerLandedPacket> PLAYER_LANDED = new CustomPacketPayload.Type<>(Origins.identifier("player_landed"));
     public static final CustomPacketPayload.Type<BadgeListPacket> BADGE_LIST = new CustomPacketPayload.Type<>(Origins.identifier("badge_list"));
+    public static final CustomPacketPayload.Type<PowersAndOriginsPacket> POWERS_AND_ORIGINS = new CustomPacketPayload.Type<>(Origins.identifier("powers_and_origins"));
     
     public static void init() {
         PayloadTypeRegistry.playS2C().register(OPEN_ORIGIN_SCREEN, OpenOriginScreenPacket.CODEC);
@@ -29,5 +30,7 @@ public class ModPackets {
         PayloadTypeRegistry.playC2S().register(CHOOSE_RANDOM_ORIGIN, ChooseRandomOriginPacket.CODEC);
         PayloadTypeRegistry.playS2C().register(CONFIRM_ORIGIN, ConfirmOriginPacket.CODEC);
         PayloadTypeRegistry.playS2C().register(BADGE_LIST, BadgeListPacket.CODEC);
+
+        PayloadTypeRegistry.playS2C().register(POWERS_AND_ORIGINS, PowersAndOriginsPacket.CODEC);
     }
 }
