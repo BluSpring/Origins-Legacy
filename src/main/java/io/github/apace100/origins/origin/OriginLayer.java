@@ -254,7 +254,6 @@ public class OriginLayer implements Comparable<OriginLayer> {
         buffer.writeBoolean(overrideChooseOriginTitle);
     }
 
-    @Environment(EnvType.CLIENT)
     public static OriginLayer read(RegistryFriendlyByteBuf buffer) {
         OriginLayer layer = new OriginLayer();
         layer.identifier = ResourceLocation.tryParse(buffer.readUtf());
