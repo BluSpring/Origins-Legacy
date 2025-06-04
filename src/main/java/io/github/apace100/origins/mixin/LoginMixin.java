@@ -1,10 +1,13 @@
 package io.github.apace100.origins.mixin;
 
+import io.github.apace100.apoli.networking.PowerListPacket;
+import io.github.apace100.apoli.power.PowerTypeRegistry;
 import io.github.apace100.origins.badge.BadgeManager;
 import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.networking.LayerListPacket;
 import io.github.apace100.origins.networking.OpenOriginScreenPacket;
 import io.github.apace100.origins.networking.OriginListPacket;
+import io.github.apace100.origins.networking.PowersAndOriginsPacket;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
@@ -36,7 +39,7 @@ public abstract class LoginMixin {
 		var origins = new HashMap<>(OriginRegistry.get());
 		origins.remove(Origin.EMPTY.getIdentifier());
 
-		ServerPlayNetworking.send(player, new OriginListPacket(origins));
+		ServerPlayNetworking.send(player, new PowersAndOriginsPacket(new PowerListPacket(PowerTypeRegistry.get()), new OriginListPacket(origins)));
 
 		ServerPlayNetworking.send(player, new LayerListPacket(OriginLayers.getLayers().stream().map(layer -> {
 			if(layer.isEnabled()) {

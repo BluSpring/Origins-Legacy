@@ -115,7 +115,11 @@ public class Origin {
         this.descriptionTranslationKey = description;
         this.upgrades = upgrades;
         for (ResourceLocation powerId : powerIds) {
-            this.add(PowerTypeRegistry.get(powerId));
+            try {
+                this.add(PowerTypeRegistry.get(powerId));
+            } catch (IllegalArgumentException e) {
+                Origins.LOGGER.error("Origin \"" + id + "\" contained unregistered power: \"" + powerId + "\"");
+            }
         }
     }
 
