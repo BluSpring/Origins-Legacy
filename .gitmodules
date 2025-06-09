@@ -1,6 +1,6 @@
 [submodule "apoli"]
 	path = apoli
-	url = git@git.devos.one:BluSpring/apoli-legacy.git
+	url = https://github.com/BluSpring/apoli-legacy.git
 [submodule "calio"]
 	path = calio
-	url = git@git.devos.one:BluSpring/calio-legacy.git
+	url = https://github.com/BluSpring/calio-legacy.git
