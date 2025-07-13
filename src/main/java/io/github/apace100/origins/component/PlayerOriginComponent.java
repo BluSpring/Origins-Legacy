@@ -20,6 +20,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class PlayerOriginComponent implements OriginComponent {
 
@@ -98,26 +100,24 @@ public class PlayerOriginComponent implements OriginComponent {
     }
 
     @Override
-    public void readFromNbt(CompoundTag compoundTag, HolderLookup.Provider registries) {
+    public void readData(ValueInput input) {
         if(player == null) {
             Origins.LOGGER.error("Player was null in `fromTag`! This is a bug!");
         }
 
         this.origins.clear();
 
-        if(compoundTag.contains("Origin")) {
+        if(input.read("Origin", ResourceLocation.CODEC).isPresent()) {
             try {
                 OriginLayer defaultOriginLayer = OriginLayers.getLayer(ResourceLocation.fromNamespaceAndPath(Origins.MODID, "origin"));
-                this.origins.put(defaultOriginLayer, OriginRegistry.get(ResourceLocation.tryParse(compoundTag.getString("Origin").orElseThrow())));
+                this.origins.put(defaultOriginLayer, OriginRegistry.get(input.read("Origin", ResourceLocation.CODEC).orElseThrow()));
             } catch(IllegalArgumentException e) {
-                Origins.LOGGER.warn("Player " + player.getDisplayName().getContents() + " had old origin which could not be migrated: " + compoundTag.getString("Origin"));
+                Origins.LOGGER.warn("Player " + player.getDisplayName().getContents() + " had old origin which could not be migrated: " + input.getStringOr("Origin", ""));
             }
         } else {
-            ListTag originLayerList = (ListTag) compoundTag.get("OriginLayers");
-            if(originLayerList != null) {
-                for(int i = 0; i < originLayerList.size(); i++) {
-                    CompoundTag layerTag = originLayerList.getCompound(i).orElseThrow();
-                    ResourceLocation layerId = ResourceLocation.tryParse(layerTag.getString("Layer").orElseThrow());
+            input.childrenList("OriginLayers").ifPresent(originLayerList -> {
+                for (ValueInput layerTag : originLayerList) {
+                    ResourceLocation layerId = layerTag.read("Layer", ResourceLocation.CODEC).orElseThrow();
                     OriginLayer layer = null;
                     try {
                         layer = OriginLayers.getLayer(layerId);
@@ -145,9 +145,9 @@ public class PlayerOriginComponent implements OriginComponent {
                         }
                     }
                 }
-            }
+            });
         }
-        this.hadOriginBefore = compoundTag.getBoolean("HadOriginBefore").orElse(false);
+        this.hadOriginBefore = input.getBooleanOr("HadOriginBefore", false);
 
         if(!player.level().isClientSide) {
             PowerHolderComponent powerComponent = PowerHolderComponent.KEY.get(player);
@@ -163,17 +163,15 @@ public class PlayerOriginComponent implements OriginComponent {
             // Compatibility with old worlds:
             // Loads power data from Origins tag, whereas new versions
             // store the data in the Apoli tag.
-            if(compoundTag.contains("Powers")) {
-                ListTag powerList = (ListTag) compoundTag.get("Powers");
-                for(int i = 0; i < powerList.size(); i++) {
-                    CompoundTag powerTag = powerList.getCompound(i).orElseThrow();
+            input.childrenList("Powers").ifPresent(powerList -> {
+                for (ValueInput powerTag : powerList) {
                     ResourceLocation powerTypeId = ResourceLocation.tryParse(powerTag.getString("Type").orElseThrow());
                     try {
                         PowerType<?> type = PowerTypeRegistry.get(powerTypeId);
                         if(powerComponent.hasPower(type)) {
-                            Tag data = powerTag.get("Data");
+                            ValueInput data = powerTag.childOrEmpty("Data");
                             try {
-                                powerComponent.getPower(type).fromTag(data, registries);
+                                powerComponent.getPower(type).fromValue(data);
                             } catch(ClassCastException e) {
                                 // Occurs when power was overriden by data pack since last world load
                                 // to be a power type which uses different data class.
@@ -184,7 +182,7 @@ public class PlayerOriginComponent implements OriginComponent {
                         Origins.LOGGER.warn("Power data of unregistered power \"" + powerTypeId + "\" found on player, skipping...");
                     }
                 }
-            }
+            });
         }
     }
 
@@ -194,15 +192,13 @@ public class PlayerOriginComponent implements OriginComponent {
     }
 
     @Override
-    public void writeToNbt(CompoundTag compoundTag, HolderLookup.Provider provider) {
-        ListTag originLayerList = new ListTag();
+    public void writeData(ValueOutput compoundTag) {
+        ValueOutput.ValueOutputList originLayerList = compoundTag.childrenList("OriginLayers");
         for(Map.Entry<OriginLayer, Origin> entry : origins.entrySet()) {
-            CompoundTag layerTag = new CompoundTag();
+            ValueOutput layerTag = originLayerList.addChild();
             layerTag.putString("Layer", entry.getKey().getIdentifier().toString());
             layerTag.putString("Origin", entry.getValue().getIdentifier().toString());
-            originLayerList.add(layerTag);
         }
-        compoundTag.put("OriginLayers", originLayerList);
         compoundTag.putBoolean("HadOriginBefore", this.hadOriginBefore);
     }
 

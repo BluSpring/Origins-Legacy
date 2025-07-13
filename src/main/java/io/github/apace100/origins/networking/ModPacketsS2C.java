@@ -14,6 +14,7 @@ import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.registry.ModComponents;
 import io.github.apace100.origins.screen.ChooseOriginScreen;
 import io.github.apace100.origins.screen.WaitForNextLayerScreen;
+import io.netty.channel.ChannelFutureListener;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginNetworking;
@@ -66,7 +67,7 @@ public class ModPacketsS2C {
     }
 
     @Environment(EnvType.CLIENT)
-    private static CompletableFuture<FriendlyByteBuf> handleHandshake(Minecraft minecraftClient, ClientHandshakePacketListenerImpl clientLoginNetworkHandler, FriendlyByteBuf packetByteBuf, Consumer<PacketSendListener> genericFutureListenerConsumer) {
+    private static CompletableFuture<FriendlyByteBuf> handleHandshake(Minecraft minecraftClient, ClientHandshakePacketListenerImpl clientLoginNetworkHandler, FriendlyByteBuf packetByteBuf, Consumer<ChannelFutureListener> genericFutureListenerConsumer) {
         FriendlyByteBuf buf = PacketByteBufs.create();
         buf.writeInt(Origins.SEMVER.length);
         for(int i = 0; i < Origins.SEMVER.length; i++) {

@@ -14,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -105,7 +106,7 @@ public class OriginDisplayScreen extends Screen {
         if(!canScroll()) {
             return;
         }
-        context.blit(RenderType::guiTextured, WINDOW, guiLeft + 155, guiTop + 35, 188, 24, 8, 134, 256, 256);
+        context.blit(RenderPipelines.GUI_TEXTURED, WINDOW, guiLeft + 155, guiTop + 35, 188, 24, 8, 134, 256, 256);
         int scrollbarY = 36;
         int maxScrollbarOffset = 141;
         int u = 176;
@@ -118,7 +119,7 @@ public class OriginDisplayScreen extends Screen {
                 u += 6;
             }
         }
-        context.blit(RenderType::guiTextured, WINDOW, guiLeft + 156, guiTop + scrollbarY, u, 24, 6, 27, 256, 256);
+        context.blit(RenderPipelines.GUI_TEXTURED, WINDOW, guiLeft + 156, guiTop + scrollbarY, u, 24, 6, 27, 256, 256);
     }
 
     private boolean scrolling = false;
@@ -174,7 +175,7 @@ public class OriginDisplayScreen extends Screen {
                mouseY < rb.y + 9 &&
                rb.hasTooltip()) {
                 int widthLimit = width - mouseX - 24;
-                ((DrawContextAccessor)context).invokeRenderTooltipInternal(font, rb.getTooltipComponents(font, widthLimit), mouseX, mouseY, DefaultTooltipPositioner.INSTANCE, null);
+                context.renderTooltip(font, rb.getTooltipComponents(font, widthLimit), mouseX, mouseY, DefaultTooltipPositioner.INSTANCE, null);
             }
         }
     }
@@ -191,14 +192,14 @@ public class OriginDisplayScreen extends Screen {
             this.renderOriginContent(context, mouseX, mouseY);
             //context.disableScissor();
         }
-        context.blit(RenderType::guiTextured, WINDOW, guiLeft, guiTop, 0, 0, windowWidth, windowWidth, windowWidth, windowHeight, 256, 256);
+        context.blit(RenderPipelines.GUI_TEXTURED, WINDOW, guiLeft, guiTop, 0, 0, windowWidth, windowWidth, windowWidth, windowHeight, 256, 256);
         if(origin != null) {
-            context.pose().pushPose();
-            context.pose().translate(0, 0, 5);
+            context.pose().pushMatrix();
+            //context.pose().translate(0, 0, 5);
             renderOriginName(context);
             //RenderSystem.setShaderTexture(0, WINDOW);
             this.renderOriginImpact(context, mouseX, mouseY);
-            context.pose().popPose();
+            context.pose().popMatrix();
             Component title = getTitleText();
             context.drawCenteredString(this.font, title.getString(), width / 2, guiTop - 15, 0xFFFFFF);
         }
@@ -211,15 +212,15 @@ public class OriginDisplayScreen extends Screen {
         int wOffset = impactValue * 8;
         for(int i = 0; i < 3; i++) {
             if(i < impactValue) {
-                context.blit(RenderType::guiTextured, WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth + wOffset, 16, 8, 8, 256, 256);
+                context.blit(RenderPipelines.GUI_TEXTURED, WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth + wOffset, 16, 8, 8, 256, 256);
             } else {
-                context.blit(RenderType::guiTextured, WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth, 16, 8, 8, 256, 256);
+                context.blit(RenderPipelines.GUI_TEXTURED, WINDOW, guiLeft + 128 + i * 10, guiTop + 19, windowWidth, 16, 8, 8, 256, 256);
             }
         }
         if(mouseX >= guiLeft + 128 && mouseX <= guiLeft + 158
             && mouseY >= guiTop + 19 && mouseY <= guiTop + 27) {
             MutableComponent ttc = Component.translatable(Origins.MODID + ".gui.impact.impact").append(": ").append(impact.getTextComponent());
-            context.renderTooltip(this.font, ttc, mouseX, mouseY);
+            context.setTooltipForNextFrame(this.font, ttc, mouseX, mouseY);
         }
     }
 
@@ -236,7 +237,7 @@ public class OriginDisplayScreen extends Screen {
         int endY = guiTop + windowHeight - border;
         for(int x = guiLeft; x < endX; x += 16) {
             for(int y = guiTop + offsetYStart; y < endY + offsetYEnd; y += 16) {
-                context.blit(RenderType::guiTextured, WINDOW, x, y, windowWidth, 0, Math.max(16, endX - x), Math.max(16, endY + offsetYEnd - y), 256, 256);
+                context.blit(RenderPipelines.GUI_TEXTURED, WINDOW, x, y, windowWidth, 0, Math.max(16, endX - x), Math.max(16, endY + offsetYEnd - y), 256, 256);
             }
         }
     }
@@ -302,7 +303,7 @@ public class OriginDisplayScreen extends Screen {
                     for(Badge badge : badges) {
                         RenderedBadge renderedBadge = new RenderedBadge(p, badge,xStart + 10 * bi, y - 1);
                         renderedBadges.add(renderedBadge);
-                        context.blit(RenderType::guiTextured, badge.spriteId(), xStart + 10 * bi, y - 1, 0, 0, 9, 9, 9, 9, 9, 9);
+                        context.blit(RenderPipelines.GUI_TEXTURED, badge.spriteId(), xStart + 10 * bi, y - 1, 0, 0, 9, 9, 9, 9, 9, 9);
                         bi++;
                     }
                 }

@@ -85,7 +85,7 @@ public class EnderianPearlEntity extends ThrowableItemProjectile {
       Entity owner = this.getOwner();
       Entity entity = super.teleport(teleportTransition);
       if (owner != null && owner.level().dimension() != teleportTransition.newLevel().dimension()) {
-         this.setOwner(null);
+         this.setOwner((Entity) null);
       }
 
       if (entity != null) {

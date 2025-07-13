@@ -60,7 +60,7 @@ dependencies {
 	minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
 	mappings(loom.layered {
 		officialMojangMappings()
-		parchment("org.parchmentmc.data:parchment-${project.property("minecraft_version")}:${project.property("parchment_snapshot")}@zip")
+		parchment("org.parchmentmc.data:parchment-${project.property("parchment_version")}:${project.property("parchment_snapshot")}@zip")
 	})
 	modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
 
@@ -78,7 +78,7 @@ dependencies {
 	}
 
 	modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
-	modRuntimeOnly("maven.modrinth:lithium:mc1.21.5-0.16.2-fabric")
+	modRuntimeOnly("maven.modrinth:lithium:mc1.21.7-0.18.0-fabric")
 
 	include(implementation("com.moulberry:mixinconstraints:1.0.8")!!)
 }

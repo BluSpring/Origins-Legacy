@@ -14,6 +14,4 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositione
 @Mixin(GuiGraphics.class)
 public interface DrawContextAccessor {
 
-    @Invoker
-    void invokeRenderTooltipInternal(Font textRenderer, List<ClientTooltipComponent> components, int x, int y, ClientTooltipPositioner positioner, @Nullable ResourceLocation sprite);
 }

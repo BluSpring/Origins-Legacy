@@ -5,10 +5,13 @@ import io.github.apace100.origins.Origins;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.renderer.DynamicUniforms;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Vector4f;
 
 /**A {@link ClientTooltipComponent} used for {@link io.github.apace100.origins.badge.CraftingRecipeBadge}
  * Draws a snapshot of a 3x3 crafting recipe in the tooltip*/
@@ -52,8 +55,9 @@ public class CraftingRecipeTooltipComponent implements ClientTooltipComponent {
     }
 
     public void drawBackground(GuiGraphics context, int x, int y, int width, int height) {
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        context.blit(RenderType::guiTextured, TEXTURE, x, y, 0, 0, 130, 86, 256, 256);
+        RenderSystem.getDynamicUniforms()
+            .writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1f, 1f, 1f, 1f), RenderSystem.getModelOffset(), RenderSystem.getTextureMatrix(), RenderSystem.getShaderLineWidth());
+        context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, 0, 130, 86, 256, 256);
     }
 
 }
