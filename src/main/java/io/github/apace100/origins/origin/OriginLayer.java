@@ -254,7 +254,6 @@ public class OriginLayer implements Comparable<OriginLayer> {
         buffer.writeBoolean(overrideChooseOriginTitle);
     }
 
-    @Environment(EnvType.CLIENT)
     public static OriginLayer read(RegistryFriendlyByteBuf buffer) {
         OriginLayer layer = new OriginLayer();
         layer.identifier = ResourceLocation.tryParse(buffer.readUtf());
@@ -360,7 +359,6 @@ public class OriginLayer implements Comparable<OriginLayer> {
             origins.forEach(buffer::writeResourceLocation);
         }
 
-        @Environment(EnvType.CLIENT)
         public static ConditionedOrigin read(RegistryFriendlyByteBuf buffer) {
             ConditionFactory<Entity>.Instance condition = null;
             if(buffer.readBoolean()) {
