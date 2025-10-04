@@ -2,19 +2,26 @@ package io.github.apace100.origins.origin;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
+import io.github.apace100.apoli.events.ApoliPlayerEvent;
 import io.github.apace100.apoli.power.MultiplePowerType;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.apoli.power.PowerTypeRegistry;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import io.github.apace100.origins.Origins;
+import io.github.apace100.origins.badge.BadgeManager;
+import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.data.CompatibilityDataTypes;
 import io.github.apace100.origins.data.OriginsDataTypes;
+import io.github.apace100.origins.networking.LayerListPacket;
+import io.github.apace100.origins.networking.OpenOriginScreenPacket;
+import io.github.apace100.origins.networking.OriginListPacket;
 import io.github.apace100.origins.registry.ModComponents;
 import io.github.apace100.origins.util.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -23,10 +30,12 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.ladysnake.cca.api.v3.component.ComponentProvider;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -67,7 +76,45 @@ public class Origin {
     }
 
     public static void init() {
+        ApoliPlayerEvent.POWERS_SYNCED.register(p -> {
+            if (!(p instanceof ServerPlayer player))
+                return;
 
+            OriginComponent component = ModComponents.ORIGIN.get(player);
+
+            var origins = new HashMap<>(OriginRegistry.get());
+            origins.remove(Origin.EMPTY.getIdentifier());
+
+            ServerPlayNetworking.send(player, new OriginListPacket(origins));
+
+            ServerPlayNetworking.send(player, new LayerListPacket(OriginLayers.getLayers().stream().map(layer -> {
+                if(layer.isEnabled()) {
+                    if(!component.hasOrigin(layer)) {
+                        component.setOrigin(layer, Origin.EMPTY);
+                    }
+                }
+
+                return layer;
+            }).toList()));
+
+            BadgeManager.sync(player);
+
+            List<ServerPlayer> playerList = player.getServer().getPlayerList().getPlayers();
+
+            playerList.forEach(spe -> ModComponents.ORIGIN.syncWith(spe, (ComponentProvider) player));
+            OriginComponent.sync(player);
+            if(!component.hasAllOrigins()) {
+                if(component.checkAutoChoosingLayers(player, true)) {
+                    component.sync();
+                }
+
+                if(component.hasAllOrigins()) {
+                    OriginComponent.onChosen(player, false);
+                } else {
+                    ServerPlayNetworking.send(player, new OpenOriginScreenPacket(true));
+                }
+            }
+        });
     }
 
     private static Origin register(Origin origin) {
