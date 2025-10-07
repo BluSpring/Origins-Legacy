@@ -2,7 +2,6 @@ package io.github.apace100.origins.origin;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
-import io.github.apace100.apoli.events.ApoliPlayerEvent;
 import io.github.apace100.apoli.power.MultiplePowerType;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.apoli.power.PowerTypeRegistry;
@@ -76,45 +75,6 @@ public class Origin {
     }
 
     public static void init() {
-        ApoliPlayerEvent.POWERS_SYNCED.register(p -> {
-            if (!(p instanceof ServerPlayer player))
-                return;
-
-            OriginComponent component = ModComponents.ORIGIN.get(player);
-
-            var origins = new HashMap<>(OriginRegistry.get());
-            origins.remove(Origin.EMPTY.getIdentifier());
-
-            ServerPlayNetworking.send(player, new OriginListPacket(origins));
-
-            ServerPlayNetworking.send(player, new LayerListPacket(OriginLayers.getLayers().stream().map(layer -> {
-                if(layer.isEnabled()) {
-                    if(!component.hasOrigin(layer)) {
-                        component.setOrigin(layer, Origin.EMPTY);
-                    }
-                }
-
-                return layer;
-            }).toList()));
-
-            BadgeManager.sync(player);
-
-            List<ServerPlayer> playerList = player.getServer().getPlayerList().getPlayers();
-
-            playerList.forEach(spe -> ModComponents.ORIGIN.syncWith(spe, (ComponentProvider) player));
-            OriginComponent.sync(player);
-            if(!component.hasAllOrigins()) {
-                if(component.checkAutoChoosingLayers(player, true)) {
-                    component.sync();
-                }
-
-                if(component.hasAllOrigins()) {
-                    OriginComponent.onChosen(player, false);
-                } else {
-                    ServerPlayNetworking.send(player, new OpenOriginScreenPacket(true));
-                }
-            }
-        });
     }
 
     private static Origin register(Origin origin) {
