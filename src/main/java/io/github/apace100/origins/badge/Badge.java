@@ -10,14 +10,14 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 
 public interface Badge extends DataObject<Badge> {
     StreamCodec<RegistryFriendlyByteBuf, Badge> STREAM_CODEC = StreamCodec.of((buf, value) -> value.writeBuf(buf), BadgeManager.REGISTRY::receiveDataObject);
     
-    ResourceLocation spriteId();
+    Identifier spriteId();
     
     boolean hasTooltip();
     
@@ -35,7 +35,7 @@ public interface Badge extends DataObject<Badge> {
 
     default void writeBuf(RegistryFriendlyByteBuf buf) {
         DataObjectFactory<Badge> factory = this.getFactory();
-        buf.writeResourceLocation(this.getBadgeFactory().id());
+        buf.writeIdentifier(this.getBadgeFactory().id());
         factory.getData().write(buf, factory.toData(this));
     }
     

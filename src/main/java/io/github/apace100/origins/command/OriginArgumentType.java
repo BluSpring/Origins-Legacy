@@ -18,9 +18,9 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public class OriginArgumentType implements ArgumentType<ResourceLocation> {
+public class OriginArgumentType implements ArgumentType<Identifier> {
 
    public static final DynamicCommandExceptionType ORIGIN_NOT_FOUND = new DynamicCommandExceptionType(
        o -> Component.translatable("commands.origin.origin_not_found", o)
@@ -30,13 +30,13 @@ public class OriginArgumentType implements ArgumentType<ResourceLocation> {
       return new OriginArgumentType();
    }
 
-   public ResourceLocation parse(StringReader stringReader) throws CommandSyntaxException {
-      return ResourceLocation.read(stringReader);
+   public Identifier parse(StringReader stringReader) throws CommandSyntaxException {
+      return Identifier.read(stringReader);
    }
 
    public static Origin getOrigin(CommandContext<CommandSourceStack> context, String argumentName) throws CommandSyntaxException {
 
-      ResourceLocation id = context.getArgument(argumentName, ResourceLocation.class);
+      Identifier id = context.getArgument(argumentName, Identifier.class);
 
       try {
          return OriginRegistry.get(id);
@@ -51,10 +51,10 @@ public class OriginArgumentType implements ArgumentType<ResourceLocation> {
    @Override
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
 
-      List<ResourceLocation> availableOrigins = new ArrayList<>();
+      List<Identifier> availableOrigins = new ArrayList<>();
 
       try {
-          ResourceLocation originLayerId = context.getArgument("layer", ResourceLocation.class);
+          Identifier originLayerId = context.getArgument("layer", Identifier.class);
           OriginLayer originLayer = OriginLayers.getLayer(originLayerId);
 
           availableOrigins.add(Origin.EMPTY.getIdentifier());

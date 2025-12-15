@@ -17,12 +17,12 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.ItemStack;
 
-public record CraftingRecipeBadge(ResourceLocation spriteId,
+public record CraftingRecipeBadge(Identifier spriteId,
                                   Recipe<CraftingInput> recipe,
                                   @Nullable Component prefix,
                                   @Nullable Component suffix) implements Badge {

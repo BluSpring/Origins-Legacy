@@ -20,7 +20,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 
@@ -29,7 +29,7 @@ import java.util.List;
 
 public class OriginDisplayScreen extends Screen {
 
-    private static final ResourceLocation WINDOW = ResourceLocation.fromNamespaceAndPath(Origins.MODID, "textures/gui/choose_origin.png");
+    private static final Identifier WINDOW = Identifier.fromNamespaceAndPath(Origins.MODID, "textures/gui/choose_origin.png");
     private Origin origin;
     private OriginLayer layer;
     private boolean isOriginRandom;
@@ -82,7 +82,7 @@ public class OriginDisplayScreen extends Screen {
     @Override
     public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         if(showDirtBackground) {
-            renderMenuBackgroundTexture(guiGraphics, ResourceLocation.withDefaultNamespace("textures/block/dirt.png"), 0, 0, 0.0F, 0.0F, width, height); // Use the dirt texture as a fallback
+            renderMenuBackgroundTexture(guiGraphics, Identifier.withDefaultNamespace("textures/block/dirt.png"), 0, 0, 0.0F, 0.0F, width, height); // Use the dirt texture as a fallback
             renderTransparentBackground(guiGraphics);
             renderMenuBackground(guiGraphics); // If the player has a menu background, render that as an overlay I guess?
         } else {

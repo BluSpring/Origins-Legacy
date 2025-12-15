@@ -13,9 +13,9 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public class LayerArgumentType implements ArgumentType<ResourceLocation> {
+public class LayerArgumentType implements ArgumentType<Identifier> {
 
    public static final DynamicCommandExceptionType LAYER_NOT_FOUND = new DynamicCommandExceptionType(
        o -> Component.translatable("commands.origin.layer_not_found", o)
@@ -25,13 +25,13 @@ public class LayerArgumentType implements ArgumentType<ResourceLocation> {
       return new LayerArgumentType();
    }
 
-   public ResourceLocation parse(StringReader stringReader) throws CommandSyntaxException {
-      return ResourceLocation.read(stringReader);
+   public Identifier parse(StringReader stringReader) throws CommandSyntaxException {
+      return Identifier.read(stringReader);
    }
 
    public static OriginLayer getLayer(CommandContext<CommandSourceStack> context, String argumentName) throws CommandSyntaxException {
 
-      ResourceLocation id = context.getArgument(argumentName, ResourceLocation.class);
+      Identifier id = context.getArgument(argumentName, Identifier.class);
 
       try {
          return OriginLayers.getLayer(id);

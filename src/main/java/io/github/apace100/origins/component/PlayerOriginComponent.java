@@ -17,7 +17,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.ValueInput;
@@ -85,7 +85,7 @@ public class PlayerOriginComponent implements OriginComponent {
     }
 
     private void grantPowersFromOrigin(Origin origin, PowerHolderComponent powerComponent) {
-        ResourceLocation source = origin.getIdentifier();
+        Identifier source = origin.getIdentifier();
         for(PowerType<?> powerType : origin.getPowerTypes()) {
             if(!powerComponent.hasPower(powerType, source)) {
                 powerComponent.addPower(powerType, source);
@@ -94,7 +94,7 @@ public class PlayerOriginComponent implements OriginComponent {
     }
 
     private void revokeRemovedPowers(Origin origin, PowerHolderComponent powerComponent) {
-        ResourceLocation source = origin.getIdentifier();
+        Identifier source = origin.getIdentifier();
         List<PowerType<?>> powersByOrigin = powerComponent.getPowersFromSource(source);
         powersByOrigin.stream().filter(p -> !origin.hasPowerType(p)).forEach(p -> powerComponent.removePower(p, source));
     }
@@ -107,17 +107,17 @@ public class PlayerOriginComponent implements OriginComponent {
 
         this.origins.clear();
 
-        if(input.read("Origin", ResourceLocation.CODEC).isPresent()) {
+        if(input.read("Origin", Identifier.CODEC).isPresent()) {
             try {
-                OriginLayer defaultOriginLayer = OriginLayers.getLayer(ResourceLocation.fromNamespaceAndPath(Origins.MODID, "origin"));
-                this.origins.put(defaultOriginLayer, OriginRegistry.get(input.read("Origin", ResourceLocation.CODEC).orElseThrow()));
+                OriginLayer defaultOriginLayer = OriginLayers.getLayer(Identifier.fromNamespaceAndPath(Origins.MODID, "origin"));
+                this.origins.put(defaultOriginLayer, OriginRegistry.get(input.read("Origin", Identifier.CODEC).orElseThrow()));
             } catch(IllegalArgumentException e) {
                 Origins.LOGGER.warn("Player " + player.getDisplayName().getContents() + " had old origin which could not be migrated: " + input.getStringOr("Origin", ""));
             }
         } else {
             input.childrenList("OriginLayers").ifPresent(originLayerList -> {
                 for (ValueInput layerTag : originLayerList) {
-                    ResourceLocation layerId = layerTag.read("Layer", ResourceLocation.CODEC).orElseThrow();
+                    Identifier layerId = layerTag.read("Layer", Identifier.CODEC).orElseThrow();
                     OriginLayer layer = null;
                     try {
                         layer = OriginLayers.getLayer(layerId);
@@ -125,7 +125,7 @@ public class PlayerOriginComponent implements OriginComponent {
                         Origins.LOGGER.warn("Could not find origin layer with id " + layerId.toString() + ", which existed on the data of player " + player.getDisplayName().getContents() + ".");
                     }
                     if(layer != null) {
-                        ResourceLocation originId = ResourceLocation.tryParse(layerTag.getString("Origin").orElseThrow());
+                        Identifier originId = Identifier.tryParse(layerTag.getString("Origin").orElseThrow());
                         Origin origin = null;
                         try {
                             origin = OriginRegistry.get(originId);
@@ -165,7 +165,7 @@ public class PlayerOriginComponent implements OriginComponent {
             // store the data in the Apoli tag.
             input.childrenList("Powers").ifPresent(powerList -> {
                 for (ValueInput powerTag : powerList) {
-                    ResourceLocation powerTypeId = ResourceLocation.tryParse(powerTag.getString("Type").orElseThrow());
+                    Identifier powerTypeId = Identifier.tryParse(powerTag.getString("Type").orElseThrow());
                     try {
                         PowerType<?> type = PowerTypeRegistry.get(powerTypeId);
                         if(powerComponent.hasPower(type)) {

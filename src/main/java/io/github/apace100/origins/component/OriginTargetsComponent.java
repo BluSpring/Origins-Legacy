@@ -7,7 +7,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 import java.util.Map;
@@ -36,15 +36,15 @@ public record OriginTargetsComponent(
         .build();
 
     public record OriginTarget(
-        ResourceLocation layer,
-        Optional<ResourceLocation> origin
+        Identifier layer,
+        Optional<Identifier> origin
     ) {
         public static final Codec<OriginTarget> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                ResourceLocation.CODEC
+                Identifier.CODEC
                     .fieldOf("Layer")
                     .forGetter(OriginTarget::layer),
-                ResourceLocation.CODEC
+                Identifier.CODEC
                     .optionalFieldOf("Layer")
                     .forGetter(OriginTarget::origin)
             )
@@ -52,8 +52,8 @@ public record OriginTargetsComponent(
         );
 
         public static final StreamCodec<FriendlyByteBuf, OriginTarget> STREAM_CODEC = StreamCodec.composite(
-            ResourceLocation.STREAM_CODEC, OriginTarget::layer,
-            ByteBufCodecs.optional(ResourceLocation.STREAM_CODEC), OriginTarget::origin,
+            Identifier.STREAM_CODEC, OriginTarget::layer,
+            ByteBufCodecs.optional(Identifier.STREAM_CODEC), OriginTarget::origin,
             OriginTarget::new
         );
     }

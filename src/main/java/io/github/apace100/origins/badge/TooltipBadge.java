@@ -8,10 +8,10 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 
-public record TooltipBadge(ResourceLocation spriteId, Component text) implements Badge {
+public record TooltipBadge(Identifier spriteId, Component text) implements Badge {
 
     public TooltipBadge(SerializableData.Instance instance) {
         this(instance.getId("sprite"), instance.get("text"));

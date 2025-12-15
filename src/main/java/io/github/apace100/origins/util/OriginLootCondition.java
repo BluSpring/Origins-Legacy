@@ -14,7 +14,7 @@ import io.github.apace100.origins.registry.ModLoot;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -24,25 +24,25 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 public class OriginLootCondition implements LootItemCondition {
     public static final MapCodec<OriginLootCondition> CODEC = RecordCodecBuilder.mapCodec(instance ->
         instance.group(
-            ResourceLocation.CODEC
+            Identifier.CODEC
                 .fieldOf("origin")
                 .forGetter(e -> e.origin),
-            ResourceLocation.CODEC
+            Identifier.CODEC
                 .optionalFieldOf("layer", null)
                 .forGetter(e -> e.layer)
         )
             .apply(instance, OriginLootCondition::new)
     );
 
-    private final ResourceLocation origin;
-    private final ResourceLocation layer;
+    private final Identifier origin;
+    private final Identifier layer;
 
-    private OriginLootCondition(ResourceLocation origin) {
+    private OriginLootCondition(Identifier origin) {
         this.origin = origin;
         this.layer = null;
     }
 
-    private OriginLootCondition(ResourceLocation origin, ResourceLocation layer) {
+    private OriginLootCondition(Identifier origin, Identifier layer) {
         this.origin = origin;
         this.layer = layer;
     }
@@ -77,18 +77,18 @@ public class OriginLootCondition implements LootItemCondition {
     }
 
     public static LootItemCondition.Builder builder(String originId) {
-        return builder(ResourceLocation.parse(originId));
+        return builder(Identifier.parse(originId));
     }
 
-    public static LootItemCondition.Builder builder(ResourceLocation origin) {
+    public static LootItemCondition.Builder builder(Identifier origin) {
         return () -> new OriginLootCondition(origin);
     }
 
     public static LootItemCondition.Builder builder(String originId, String layerId) {
-        return builder(ResourceLocation.parse(originId), ResourceLocation.parse(layerId));
+        return builder(Identifier.parse(originId), Identifier.parse(layerId));
     }
 
-    public static LootItemCondition.Builder builder(ResourceLocation origin, ResourceLocation layer) {
+    public static LootItemCondition.Builder builder(Identifier origin, Identifier layer) {
         return () -> new OriginLootCondition(origin, layer);
     }
 }

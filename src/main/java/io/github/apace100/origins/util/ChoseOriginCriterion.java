@@ -4,10 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.origin.Origin;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Optional;
@@ -18,7 +18,7 @@ public class ChoseOriginCriterion extends SimpleCriterionTrigger<ChoseOriginCrit
             EntityPredicate.ADVANCEMENT_CODEC
                 .optionalFieldOf("player")
                 .forGetter(Conditions::player),
-            ResourceLocation.CODEC
+            Identifier.CODEC
                 .fieldOf("origin")
                 .forGetter(conditions -> conditions.originId)
         )
@@ -27,7 +27,7 @@ public class ChoseOriginCriterion extends SimpleCriterionTrigger<ChoseOriginCrit
 
     public static ChoseOriginCriterion INSTANCE = new ChoseOriginCriterion();
 
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Origins.MODID, "chose_origin");
+    private static final Identifier ID = Identifier.fromNamespaceAndPath(Origins.MODID, "chose_origin");
 
     public void trigger(ServerPlayer player, Origin origin) {
         this.trigger(player, (conditions -> conditions.matches(origin)));
@@ -39,10 +39,10 @@ public class ChoseOriginCriterion extends SimpleCriterionTrigger<ChoseOriginCrit
     }
 
     public static class Conditions implements SimpleCriterionTrigger.SimpleInstance {
-        private final ResourceLocation originId;
+        private final Identifier originId;
         private final Optional<ContextAwarePredicate> player;
 
-        public Conditions(Optional<ContextAwarePredicate> player, ResourceLocation originId) {
+        public Conditions(Optional<ContextAwarePredicate> player, Identifier originId) {
             this.player = player;
             this.originId = originId;
         }

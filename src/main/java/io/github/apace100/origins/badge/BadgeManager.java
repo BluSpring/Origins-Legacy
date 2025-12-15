@@ -11,7 +11,7 @@ import io.github.apace100.origins.integration.AutoBadgeCallback;
 import io.github.apace100.origins.networking.BadgeListPacket;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Recipe;
@@ -28,14 +28,14 @@ public final class BadgeManager {
         .dataErrorHandler((id, exception) -> Origins.LOGGER.error("Failed to read badge " + id + ", caused by", exception))
         .defaultFactory(BadgeFactories.KEYBIND)
         .buildAndRegister();
-    private static final Map<ResourceLocation, List<Badge>> BADGES = new HashMap<>();
+    private static final Map<Identifier, List<Badge>> BADGES = new HashMap<>();
 
-    private static final ResourceLocation TOGGLE_BADGE_SPRITE = Origins.identifier("textures/gui/badge/toggle.png");
-    private static final ResourceLocation ACTIVE_BADGE_SPRITE = Origins.identifier("textures/gui/badge/active.png");
-    private static final ResourceLocation RECIPE_BADGE_SPRITE = Origins.identifier("textures/gui/badge/recipe.png");
+    private static final Identifier TOGGLE_BADGE_SPRITE = Origins.identifier("textures/gui/badge/toggle.png");
+    private static final Identifier ACTIVE_BADGE_SPRITE = Origins.identifier("textures/gui/badge/active.png");
+    private static final Identifier RECIPE_BADGE_SPRITE = Origins.identifier("textures/gui/badge/recipe.png");
 
-    private static final ResourceLocation TOGGLE_BADGE_ID = Origins.identifier("toggle");
-    private static final ResourceLocation ACTIVE_BADGE_ID = Origins.identifier("active");
+    private static final Identifier TOGGLE_BADGE_ID = Origins.identifier("toggle");
+    private static final Identifier ACTIVE_BADGE_ID = Origins.identifier("active");
 
     public static void init() {
         //register builtin badge types
@@ -54,12 +54,12 @@ public final class BadgeManager {
         REGISTRY.registerFactory(factory.id(), factory);
     }
 
-    public static void putPowerBadge(ResourceLocation powerId, Badge badge) {
+    public static void putPowerBadge(Identifier powerId, Badge badge) {
         List<Badge> badgeList = BADGES.computeIfAbsent(powerId, id -> new LinkedList<>());
         badgeList.add(badge);
     }
 
-    public static List<Badge> getPowerBadges(ResourceLocation powerId) {
+    public static List<Badge> getPowerBadges(Identifier powerId) {
         return BADGES.computeIfAbsent(powerId, id -> new LinkedList<>());
     }
 
@@ -72,13 +72,13 @@ public final class BadgeManager {
         ServerPlayNetworking.send(player, new BadgeListPacket(BADGES));
     }
 
-    public static void readCustomBadges(ResourceLocation powerId, ResourceLocation factoryId, boolean isSubPower, JsonElement data, PowerType<?> powerType) {
+    public static void readCustomBadges(Identifier powerId, Identifier factoryId, boolean isSubPower, JsonElement data, PowerType<?> powerType) {
         if(!(powerType.isHidden() || isSubPower)) {
             if(data.isJsonArray()) {
                 BADGES.computeIfAbsent(powerId, id -> new LinkedList<>());
                 for(JsonElement badgeJson : data.getAsJsonArray()) {
                     if(badgeJson.isJsonPrimitive()) {
-                        ResourceLocation badgeId = ResourceLocation.tryParse(badgeJson.getAsString());
+                        Identifier badgeId = Identifier.tryParse(badgeJson.getAsString());
                         if(badgeId != null) {
                             Badge badge = REGISTRY.get(badgeId);
                             if(badge != null) {
@@ -107,7 +107,7 @@ public final class BadgeManager {
         }
     }
 
-    public static void readAutoBadges(ResourceLocation powerId, ResourceLocation factoryId, boolean isSubPower, JsonObject json, PowerType<?> powerType) {
+    public static void readAutoBadges(Identifier powerId, Identifier factoryId, boolean isSubPower, JsonObject json, PowerType<?> powerType) {
         if(BADGES.containsKey(powerId) || powerType.isHidden() || isSubPower) {
             // No auto-badges should be created if:
             // - The power has custom badges defined in the data
@@ -127,11 +127,11 @@ public final class BadgeManager {
         }
     }
 
-    public static void createAutoBadges(ResourceLocation powerId, PowerType<?> powerType, List<Badge> badgeList) {
+    public static void createAutoBadges(Identifier powerId, PowerType<?> powerType, List<Badge> badgeList) {
         Power power = powerType.create(null);
         if(power instanceof Active active) {
             boolean toggle = active instanceof TogglePower || active instanceof ToggleNightVisionPower;
-            ResourceLocation autoBadgeId = toggle ? TOGGLE_BADGE_ID : ACTIVE_BADGE_ID;
+            Identifier autoBadgeId = toggle ? TOGGLE_BADGE_ID : ACTIVE_BADGE_ID;
             if(REGISTRY.containsId(autoBadgeId)) {
                 badgeList.add(REGISTRY.get(autoBadgeId));
             } else {

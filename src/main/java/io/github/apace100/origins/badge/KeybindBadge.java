@@ -11,10 +11,10 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 
-public record KeybindBadge(ResourceLocation spriteId, String text) implements Badge {
+public record KeybindBadge(Identifier spriteId, String text) implements Badge {
 
     public KeybindBadge(SerializableData.Instance instance) {
         this(instance.getId("sprite"), instance.get("text"));

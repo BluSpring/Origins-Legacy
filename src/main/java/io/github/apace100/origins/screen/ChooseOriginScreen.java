@@ -15,7 +15,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -41,7 +41,7 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 		this.originSelection = new ArrayList<>(10);
 		Player player = Minecraft.getInstance().player;
 		OriginLayer currentLayer = layerList.get(currentLayerIndex);
-		List<ResourceLocation> originIdentifiers = currentLayer.getOrigins(player);
+		List<Identifier> originIdentifiers = currentLayer.getOrigins(player);
 		originIdentifiers.forEach(originId -> {
 			Origin origin = OriginRegistry.get(originId);
 			if(origin.isChoosable()) {
@@ -124,14 +124,14 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 	private void initRandomOrigin() {
 		this.randomOrigin = new Origin(Origins.identifier("random"), new ItemStack(ModItems.ORB_OF_ORIGIN), Impact.NONE, -1, Integer.MAX_VALUE);
 		MutableComponent randomOriginText = (MutableComponent)Component.nullToEmpty("");
-		List<ResourceLocation> randoms = layerList.get(currentLayerIndex).getRandomOrigins(Minecraft.getInstance().player);
+		List<Identifier> randoms = layerList.get(currentLayerIndex).getRandomOrigins(Minecraft.getInstance().player);
 		randoms.sort((ia, ib) -> {
 			Origin a = OriginRegistry.get(ia);
 			Origin b = OriginRegistry.get(ib);
 			int impDelta = a.getImpact().getImpactValue() - b.getImpact().getImpactValue();
 			return impDelta == 0 ? a.getOrder() - b.getOrder() : impDelta;
 		});
-		for(ResourceLocation id : randoms) {
+		for(Identifier id : randoms) {
 			randomOriginText.append(OriginRegistry.get(id).getName());
 			randomOriginText.append(Component.nullToEmpty("\n"));
 		}

@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.DynamicUniforms;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.NonNullList;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector4f;
 
@@ -19,7 +19,7 @@ public class CraftingRecipeTooltipComponent implements ClientTooltipComponent {
     private final int recipeWidth;
     private final NonNullList<ItemStack> inputs;
     private final ItemStack output;
-    private static final ResourceLocation TEXTURE = Origins.identifier("textures/gui/tooltip/recipe_tooltip.png");
+    private static final Identifier TEXTURE = Origins.identifier("textures/gui/tooltip/recipe_tooltip.png");
 
     public CraftingRecipeTooltipComponent(int recipeWidth, NonNullList<ItemStack> inputs, ItemStack output) {
         this.recipeWidth = recipeWidth;

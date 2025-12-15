@@ -3,17 +3,17 @@ package io.github.apace100.origins.util;
 import io.github.apace100.apoli.power.*;
 import java.util.HashMap;
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class PowerKeyManager {
 
-    private static final HashMap<ResourceLocation, String> KEY_CACHE = new HashMap<>();
+    private static final HashMap<Identifier, String> KEY_CACHE = new HashMap<>();
 
     public static void clearCache() {
         KEY_CACHE.clear();
     }
 
-    public static String getKeyIdentifier(ResourceLocation powerId) {
+    public static String getKeyIdentifier(Identifier powerId) {
         if(KEY_CACHE.containsKey(powerId)) {
             return KEY_CACHE.get(powerId);
         }
@@ -22,7 +22,7 @@ public class PowerKeyManager {
         return key;
     }
 
-    private static String getKeyFromPower(ResourceLocation powerId) {
+    private static String getKeyFromPower(Identifier powerId) {
         if(PowerTypeRegistry.contains(powerId)) {
             PowerType<?> powerType = PowerTypeRegistry.get(powerId);
             Power power = powerType.create(null);
@@ -30,8 +30,8 @@ public class PowerKeyManager {
             if (power instanceof Active) {
                 key = ((Active) power).getKey().key;
             } else if (powerType instanceof MultiplePowerType<?>) {
-                List<ResourceLocation> subs = ((MultiplePowerType<?>) powerType).getSubPowers();
-                for (ResourceLocation sub : subs) {
+                List<Identifier> subs = ((MultiplePowerType<?>) powerType).getSubPowers();
+                for (Identifier sub : subs) {
                     String subKey = getKeyFromPower(sub);
                     if (!subKey.isEmpty()) {
                         return subKey;

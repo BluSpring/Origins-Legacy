@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record SpriteBadge(ResourceLocation spriteId) implements Badge {
+public record SpriteBadge(Identifier spriteId) implements Badge {
 
     public SpriteBadge(SerializableData.Instance instance) {
         this(instance.getId("sprite"));

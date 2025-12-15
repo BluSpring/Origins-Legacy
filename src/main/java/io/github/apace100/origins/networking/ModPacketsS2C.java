@@ -25,7 +25,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.PacketSendListener;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -124,7 +124,7 @@ public class ModPacketsS2C {
         try {
             context.client().execute(() -> {
                 BadgeManager.clear();
-                for(Map.Entry<ResourceLocation, List<Badge>> badgeEntry : packet.badges().entrySet()) {
+                for(Map.Entry<Identifier, List<Badge>> badgeEntry : packet.badges().entrySet()) {
                     for(Badge badge : badgeEntry.getValue()) {
                         BadgeManager.putPowerBadge(badgeEntry.getKey(), badge);
                     }

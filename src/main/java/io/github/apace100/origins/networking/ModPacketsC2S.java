@@ -10,7 +10,7 @@ import io.github.apace100.origins.registry.ModComponents;
 import net.fabricmc.fabric.api.networking.v1.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -30,8 +30,8 @@ public class ModPacketsC2S {
     }
 
     private static void chooseOrigin(ChooseOriginPacket packet, ServerPlayNetworking.Context context) {
-        ResourceLocation originId = packet.originId();
-        ResourceLocation layerId = packet.layerId();
+        Identifier originId = packet.originId();
+        Identifier layerId = packet.layerId();
         ServerPlayer playerEntity = context.player();
         context.server().execute(() -> {
             OriginComponent component = ModComponents.ORIGIN.get(playerEntity);
@@ -65,15 +65,15 @@ public class ModPacketsC2S {
     }
 
     private static void chooseRandomOrigin(ChooseRandomOriginPacket packet, ServerPlayNetworking.Context context) {
-        ResourceLocation layerId = packet.layerId();
+        Identifier layerId = packet.layerId();
         ServerPlayer playerEntity = context.player();
         context.server().execute(() -> {
             OriginComponent component = ModComponents.ORIGIN.get(playerEntity);
             OriginLayer layer = OriginLayers.getLayer(layerId);
             if(!component.hasAllOrigins() && !component.hasOrigin(layer)) {
-                List<ResourceLocation> randomOrigins = layer.getRandomOrigins(playerEntity);
+                List<Identifier> randomOrigins = layer.getRandomOrigins(playerEntity);
                 if(layer.isRandomAllowed() && randomOrigins.size() > 0) {
-                    ResourceLocation randomOrigin = randomOrigins.get(new Random().nextInt(randomOrigins.size()));
+                    Identifier randomOrigin = randomOrigins.get(new Random().nextInt(randomOrigins.size()));
                     Origin origin = OriginRegistry.get(randomOrigin);
                     boolean hadOriginBefore = component.hadOriginBefore();
                     boolean hadAllOrigins = component.hasAllOrigins();

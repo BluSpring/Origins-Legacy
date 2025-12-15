@@ -9,7 +9,7 @@ import io.github.apace100.calio.data.MultiJsonDataLoader;
 import io.github.apace100.origins.Origins;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 
@@ -28,7 +28,7 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 	}
 
 	@Override
-	protected void apply(Map<ResourceLocation, List<JsonElement>> loader, ResourceManager manager, ProfilerFiller profiler) {
+	protected void apply(Map<Identifier, List<JsonElement>> loader, ResourceManager manager, ProfilerFiller profiler) {
 		OriginRegistry.reset();
 		AtomicBoolean hasConfigChanged = new AtomicBoolean(false);
 		loader.forEach((id, jel) -> {
@@ -69,12 +69,12 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 	}
 
 	@Override
-	public ResourceLocation getFabricId() {
-		return ResourceLocation.fromNamespaceAndPath(Origins.MODID, "origins");
+	public Identifier getFabricId() {
+		return Identifier.fromNamespaceAndPath(Origins.MODID, "origins");
 	}
 
 	@Override
-	public Collection<ResourceLocation> getFabricDependencies() {
+	public Collection<Identifier> getFabricDependencies() {
 		return Set.of(Apoli.identifier("powers"));
 	}
 }

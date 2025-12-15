@@ -4,9 +4,9 @@ import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableData.Instance;
 import io.github.apace100.calio.registry.DataObjectFactory;
 import java.util.function.Function;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record BadgeFactory(ResourceLocation id, SerializableData data, Function<SerializableData.Instance, Badge> factory) implements DataObjectFactory<Badge> {
+public record BadgeFactory(Identifier id, SerializableData data, Function<SerializableData.Instance, Badge> factory) implements DataObjectFactory<Badge> {
 
     @Override
     public SerializableData getData() {

@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 
 public interface OriginComponent extends AutoSyncedComponent {
@@ -80,7 +80,7 @@ public interface OriginComponent extends AutoSyncedComponent {
 				} else if (layer.getOriginOptionCount(player) == 1 && layer.shouldAutoChoose()) {
 					List<Origin> origins = layer.getOrigins(player).stream().map(OriginRegistry::get).filter(Origin::isChoosable).collect(Collectors.toList());
 					if (origins.size() == 0) {
-						List<ResourceLocation> randomOrigins = layer.getRandomOrigins(player);
+						List<Identifier> randomOrigins = layer.getRandomOrigins(player);
 						setOrigin(layer, OriginRegistry.get(randomOrigins.get(player.getRandom().nextInt(randomOrigins.size()))));
 					} else {
 						setOrigin(layer, origins.get(0));

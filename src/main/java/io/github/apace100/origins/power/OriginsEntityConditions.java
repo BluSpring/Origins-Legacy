@@ -11,7 +11,7 @@ import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.registry.ModComponents;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
@@ -24,9 +24,9 @@ public class OriginsEntityConditions {
             .add("layer", SerializableDataTypes.IDENTIFIER, null),
             (data, entity) -> {
                 if(entity instanceof Player) {OriginComponent component = ModComponents.ORIGIN.get(entity);
-                    ResourceLocation originId = data.getId("origin");
+                    Identifier originId = data.getId("origin");
                     if(data.isPresent("layer")) {
-                        ResourceLocation layerId = data.getId("layer");
+                        Identifier layerId = data.getId("layer");
                         OriginLayer layer = OriginLayers.getLayer(layerId);
                         if(layer == null) {
                             return false;

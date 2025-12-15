@@ -8,7 +8,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
@@ -22,10 +22,10 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 public class ModLoot {
 
-    private static final ResourceLocation DUNGEON_LOOT = ResourceLocation.withDefaultNamespace("chests/simple_dungeon");
-    private static final ResourceLocation STRONGHOLD_LIBRARY = ResourceLocation.withDefaultNamespace("chests/stronghold_library");
-    private static final ResourceLocation MINESHAFT = ResourceLocation.withDefaultNamespace("chests/abandoned_mineshaft");
-    private static final ResourceLocation WATER_RUIN = ResourceLocation.withDefaultNamespace("chests/underwater_ruin_small");
+    private static final Identifier DUNGEON_LOOT = Identifier.withDefaultNamespace("chests/simple_dungeon");
+    private static final Identifier STRONGHOLD_LIBRARY = Identifier.withDefaultNamespace("chests/stronghold_library");
+    private static final Identifier MINESHAFT = Identifier.withDefaultNamespace("chests/abandoned_mineshaft");
+    private static final Identifier WATER_RUIN = Identifier.withDefaultNamespace("chests/underwater_ruin_small");
 
     public static final LootItemConditionType ORIGIN_LOOT_CONDITION = registerLootCondition("origin", OriginLootCondition.CODEC);
 
@@ -39,7 +39,7 @@ public class ModLoot {
                 return;
             }
             var waterProtection = registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(ModEnchantments.WATER_PROTECTION);
-            var identifier = resourceKey.location();
+            var identifier = resourceKey.identifier();
             if (DUNGEON_LOOT.equals(identifier)) {
                 LootPool.Builder lootPool = new LootPool.Builder();
                 lootPool.setRolls(ConstantValue.exactly(1))
