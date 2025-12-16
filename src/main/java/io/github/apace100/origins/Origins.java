@@ -45,6 +45,8 @@ import org.apache.logging.log4j.Logger;
 public class Origins implements ModInitializer, OrderedResourceListenerInitializer {
 
 	public static final String MODID = "origins";
+	public static final String LEGACY_MODID = "origins_legacy";
+
 	public static String VERSION = "";
 	public static int[] SEMVER;
 	public static final Logger LOGGER = LogManager.getLogger(Origins.class);
@@ -79,7 +81,8 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 			});
 		config = AutoConfig.getConfigHolder(ServerConfig.class).getConfig();
 
-		NamespaceAlias.addAlias(MODID, "apoli");
+		NamespaceAlias.addAlias(MODID, Apoli.MODID);
+		NamespaceAlias.addAlias(LEGACY_MODID, Apoli.LEGACY_MODID);
 
 		OriginsPowerTypes.register();
 		OriginsEntityConditions.register();
@@ -117,6 +120,10 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 
 	public static Identifier identifier(String path) {
 		return Identifier.fromNamespaceAndPath(Origins.MODID, path);
+	}
+
+	public static ResourceLocation legacy(String path) {
+		return ResourceLocation.fromNamespaceAndPath(LEGACY_MODID, path);
 	}
 
 	@Override
