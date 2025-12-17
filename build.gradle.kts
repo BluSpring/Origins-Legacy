@@ -16,6 +16,28 @@ allprojects {
 	repositories {
 		maven("https://maven.parchmentmc.org")
 	}
+
+	apply(plugin = "maven-publish")
+
+	publishing {
+		publications {
+			create<MavenPublication>("mavenJava") {
+				artifactId = project.property("archives_base_name") as String
+				from(components["java"])
+			}
+		}
+
+		// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+		repositories {
+			maven("https://mvn.devos.one/releases") {
+				name = "devOS"
+				credentials {
+					username = System.getenv()["MAVEN_USER"]
+					password = System.getenv()["MAVEN_PASS"]
+				}
+			}
+		}
+	}
 }
 
 subprojects {
@@ -70,8 +92,8 @@ dependencies {
 	implementation(project(":apoli", "namedElements"))
 	implementation(project(":calio", "namedElements"))
 
-	modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${property("cca_version")}")
-	modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")
+	modApi("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${property("cca_version")}")
+	modApi("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")
 
 	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.property("clothconfig_version")}") {
 		exclude(group = "net.fabricmc.fabric-api")
