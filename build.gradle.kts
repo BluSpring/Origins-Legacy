@@ -26,28 +26,6 @@ allprojects {
 			}
 		}
 	}
-
-	apply(plugin = "maven-publish")
-
-	publishing {
-		publications {
-			create<MavenPublication>("mavenJava") {
-				artifactId = project.property("archives_base_name") as String
-				from(components["java"])
-			}
-		}
-
-		// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-		repositories {
-			maven("https://mvn.devos.one/releases") {
-				name = "devOS"
-				credentials {
-					username = System.getenv()["MAVEN_USER"]
-					password = System.getenv()["MAVEN_PASS"]
-				}
-			}
-		}
-	}
 }
 
 subprojects {
@@ -154,9 +132,12 @@ publishing {
 
 	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
+		maven("https://mvn.devos.one/releases") {
+			name = "devOS"
+			credentials {
+				username = System.getenv()["MAVEN_USER"]
+				password = System.getenv()["MAVEN_PASS"]
+			}
+		}
 	}
 }
