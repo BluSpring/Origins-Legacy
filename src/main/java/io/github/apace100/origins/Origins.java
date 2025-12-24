@@ -122,8 +122,8 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 		return Identifier.fromNamespaceAndPath(Origins.MODID, path);
 	}
 
-	public static ResourceLocation legacy(String path) {
-		return ResourceLocation.fromNamespaceAndPath(LEGACY_MODID, path);
+	public static Identifier legacy(String path) {
+		return Identifier.fromNamespaceAndPath(LEGACY_MODID, path);
 	}
 
 	@Override

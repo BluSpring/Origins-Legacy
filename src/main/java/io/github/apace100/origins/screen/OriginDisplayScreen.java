@@ -14,8 +14,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -131,40 +131,40 @@ public class OriginDisplayScreen extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(MouseButtonEvent event) {
         scrolling = false;
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(event);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
         if(canScroll()) {
             scrolling = false;
             int scrollbarY = 36;
             int maxScrollbarOffset = 141;
             float part = scrollPos / (float)currentMaxScroll;
             scrollbarY += (maxScrollbarOffset - scrollbarY) * part;
-            if(mouseX >= guiLeft + 156 && mouseX < guiLeft + 156 + 6) {
-                if(mouseY >= guiTop + scrollbarY && mouseY < guiTop + scrollbarY + 27) {
+            if(event.x() >= guiLeft + 156 && event.x() < guiLeft + 156 + 6) {
+                if(event.y() >= guiTop + scrollbarY && event.y() < guiTop + scrollbarY + 27) {
                     scrolling = true;
                     scrollDragStart = scrollbarY;
-                    mouseDragStart = mouseY;
+                    mouseDragStart = event.y();
                     return true;
                 }
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, isDoubleClick);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+    public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
         if(this.scrolling) {
-            int delta = (int)(mouseY - mouseDragStart);
+            int delta = (int)(event.y() - mouseDragStart);
             int newScrollPos = (int)Math.max(36, Math.min(141, scrollDragStart + delta));
             float part = (newScrollPos - 36) / (float)(141 - 36);
             scrollPos = (int)(part * currentMaxScroll);
         }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return super.mouseDragged(event, deltaX, deltaY);
     }
 
     private void renderBadgeTooltip(GuiGraphics context, int mouseX, int mouseY) {

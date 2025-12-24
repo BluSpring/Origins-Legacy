@@ -19,6 +19,8 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,7 +38,7 @@ public class OriginCommand {
 
 	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(
-			literal("origin").requires(cs -> cs.hasPermission(2))
+			literal("origin").requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
 				.then(literal("set")
 					.then(argument("targets", EntityArgument.players())
 						.then(argument("layer", LayerArgumentType.layer())

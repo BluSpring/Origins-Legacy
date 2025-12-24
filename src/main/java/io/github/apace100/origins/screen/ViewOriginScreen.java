@@ -36,7 +36,7 @@ public class ViewOriginScreen extends OriginDisplayScreen {
 			ItemStack displayItem = origin.getDisplayItem();
 			if(displayItem.getItem() == Items.PLAYER_HEAD) {
 				if(!displayItem.has(DataComponents.PROFILE)) {
-					displayItem.set(DataComponents.PROFILE, new ResolvableProfile(player.getGameProfile()));
+					displayItem.set(DataComponents.PROFILE, ResolvableProfile.createResolved(player.getGameProfile()));
 				}
 			}
 			if((origin != Origin.EMPTY || layer.getOriginOptionCount(player) > 0) && !layer.isHidden()) {

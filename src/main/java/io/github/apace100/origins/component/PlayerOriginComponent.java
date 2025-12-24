@@ -149,7 +149,7 @@ public class PlayerOriginComponent implements OriginComponent {
         }
         this.hadOriginBefore = input.getBooleanOr("HadOriginBefore", false);
 
-        if(!player.level().isClientSide) {
+        if(!player.level().isClientSide()) {
             PowerHolderComponent powerComponent = PowerHolderComponent.KEY.get(player);
             for(Origin origin : origins.values()) {
                 // Grants powers only if the player doesn't have them yet from the specific Origin source.

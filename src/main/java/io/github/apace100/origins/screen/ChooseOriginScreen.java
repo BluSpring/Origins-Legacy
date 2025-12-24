@@ -48,7 +48,7 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 				ItemStack displayItem = origin.getDisplayItem();
 				if(displayItem.getItem() == Items.PLAYER_HEAD) {
 					if(!displayItem.has(DataComponents.PROFILE)) {
-						displayItem.set(DataComponents.PROFILE, new ResolvableProfile(player.getGameProfile()));
+						displayItem.set(DataComponents.PROFILE, ResolvableProfile.createResolved(player.getGameProfile()));
 					}
 				}
 				this.originSelection.add(origin);

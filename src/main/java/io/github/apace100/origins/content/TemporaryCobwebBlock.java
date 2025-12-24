@@ -23,7 +23,7 @@ public class TemporaryCobwebBlock extends WebBlock {
 
 	@Override
 	public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
-		if(!world.isClientSide) {
+		if(!world.isClientSide()) {
 			world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
 		}
 	}
@@ -45,10 +45,10 @@ public class TemporaryCobwebBlock extends WebBlock {
 	}
 
 	@Override
-	protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier) {
+	protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier applier, boolean intersects) {
 		//if (PowerTypes.WEBBING.isActive(entityIn)) {
 		//	return;
 		//}
-		super.entityInside(state, level, pos, entity, effectApplier);
+		super.entityInside(state, level, pos, entity, applier, intersects);
 	}
 }

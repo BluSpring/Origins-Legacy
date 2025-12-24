@@ -38,7 +38,7 @@ public class OrbOfOriginItem extends Item {
     @Override
     public InteractionResult use(Level world, Player user, InteractionHand hand) {
         ItemStack stack = user.getItemInHand(hand);
-        if(!world.isClientSide) {
+        if(!world.isClientSide()) {
             OriginComponent component = ModComponents.ORIGIN.get(user);
             Map<OriginLayer, Origin> targets = getTargets(stack);
             if(targets.size() > 0) {

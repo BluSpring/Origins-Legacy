@@ -16,7 +16,7 @@ import net.minecraft.world.level.material.MapColor;
 public class ModBlocks {
 
     public static final Block TEMPORARY_COBWEB = new TemporaryCobwebBlock(BlockBehaviour.Properties.of()
-        .mapColor(MapColor.WOOL).forceSolidOn().noCollission().requiresCorrectToolForDrops().strength(4.0F)
+        .mapColor(MapColor.WOOL).forceSolidOn().noCollision().requiresCorrectToolForDrops().strength(4.0F)
         .setId(ResourceKey.create(Registries.BLOCK, Origins.identifier("temporary_cobweb")))
     );
 

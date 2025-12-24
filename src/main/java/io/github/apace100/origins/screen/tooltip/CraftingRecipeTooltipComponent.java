@@ -7,7 +7,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.DynamicUniforms;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -55,8 +54,6 @@ public class CraftingRecipeTooltipComponent implements ClientTooltipComponent {
     }
 
     public void drawBackground(GuiGraphics context, int x, int y, int width, int height) {
-        RenderSystem.getDynamicUniforms()
-            .writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1f, 1f, 1f, 1f), RenderSystem.getModelOffset(), RenderSystem.getTextureMatrix(), RenderSystem.getShaderLineWidth());
         context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, 0, 130, 86, 256, 256);
     }
 
