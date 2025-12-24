@@ -55,7 +55,7 @@ public class WaitForNextLayerScreen extends Screen {
         if(showDirtBackground) {
             super.renderMenuBackground(context);
         } else {
-            super.renderBackground(context, mouseX, mouseY, delta);
+            super.renderTransparentBackground(context);
         }
     }
 }

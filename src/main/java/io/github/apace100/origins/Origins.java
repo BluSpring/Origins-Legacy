@@ -41,6 +41,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.CreativeModeTabs;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
 public class Origins implements ModInitializer, OrderedResourceListenerInitializer {
 
@@ -56,6 +57,10 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 
 	@Override
 	public void onInitialize() {
+		if (FabricLoader.getInstance().isDevelopmentEnvironment() && System.getProperty("origins.audit", "false").equalsIgnoreCase("true")) {
+			MixinEnvironment.getCurrentEnvironment().audit();
+		}
+
 		ModPackets.init();
 		FabricLoader.getInstance().getModContainer(MODID).ifPresent(modContainer -> {
 			VERSION = modContainer.getMetadata().getVersion().getFriendlyString();

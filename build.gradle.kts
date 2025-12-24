@@ -94,7 +94,7 @@ dependencies {
 	}
 
 	modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
-	modRuntimeOnly("maven.modrinth:lithium:mc1.21.7-0.18.0-fabric")
+	modRuntimeOnly("maven.modrinth:lithium:mc1.21.11-0.21.1-fabric")
 
 	include(implementation("com.moulberry:mixinconstraints:1.0.8")!!)
 }
