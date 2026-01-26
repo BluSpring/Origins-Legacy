@@ -1,8 +1,11 @@
+import me.modmuss50.mpp.ModPublishExtension
+import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
 	id("fabric-loom") version "1.10-SNAPSHOT"
 	`maven-publish`
+	id("me.modmuss50.mod-publish-plugin") version "0.7.+"
 }
 
 base {
@@ -10,6 +13,11 @@ base {
 }
 
 version = "${project.property("mod_version")}+${project.property("minecraft_version")}"
+
+if (System.getenv("GITHUB_TAG") != null) {
+	version = System.getenv("GITHUB_TAG") // I hope I actually keep proper track of this. If not, yell at me.
+}
+
 group = project.property("maven_group") as String
 
 allprojects {
@@ -139,5 +147,36 @@ publishing {
 				password = System.getenv()["MAVEN_PASS"]
 			}
 		}
+	}
+}
+
+project.extensions.configure<ModPublishExtension>("publishMods") {
+	file = project.tasks.named<RemapJarTask>("remapJar").get().archiveFile
+	displayName = "Origins: Legacy v${project.version}"
+	version = project.version as String
+	changelog = System.getenv("RELEASE_DESCRIPTION") ?: ""
+	type = ReleaseType.STABLE
+	modLoaders.add("fabric")
+
+	dryRun = providers.environmentVariable("MODRINTH_TOKEN").getOrNull() == null
+			|| providers.environmentVariable("CURSEFORGE_TOKEN").getOrNull() == null
+
+	modrinth {
+		projectId = project.property("publishing.modrinth").toString()
+		accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+		minecraftVersions.add(project.property("minecraft_version") as String)
+
+		requires("fabric-api")
+		embeds("cloth-config", "cardinal-components-api", "pal", "additionalentityattributes")
+	}
+
+	curseforge {
+		type = ReleaseType.STABLE
+		projectId = project.property("publishing.curseforge").toString()
+		accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
+		minecraftVersions.add(project.property("minecraft_version") as String)
+
+		requires("fabric-api")
+		embeds("cloth-config", "cardinal-components-api", "pal")
 	}
 }
