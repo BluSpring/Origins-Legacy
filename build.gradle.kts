@@ -146,6 +146,10 @@ tasks.jar {
 	from("LICENSE")
 }
 
+tasks.publish {
+	finalizedBy("publishMods")
+}
+
 // configure the maven publication
 publishing {
 	publications {
