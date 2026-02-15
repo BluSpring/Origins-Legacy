@@ -39,7 +39,7 @@ public abstract class LoginMixin {
 		var origins = new HashMap<>(OriginRegistry.get());
 		origins.remove(Origin.EMPTY.getIdentifier());
 
-		ServerPlayNetworking.send(player, new PowersAndOriginsPacket(new PowerListPacket(PowerTypeRegistry.get()), new OriginListPacket(origins)));
+		ServerPlayNetworking.send(player, new PowersAndOriginsPacket(new PowerListPacket(PowerTypeRegistry.get()), OriginListPacket.fromOriginsMap(origins)));
 
 		ServerPlayNetworking.send(player, new LayerListPacket(OriginLayers.getLayers().stream().map(layer -> {
 			if(layer.isEnabled()) {
