@@ -6,20 +6,20 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
-public record OriginHolder(ResourceLocation id, ItemStack icon, Impact impact, int order, int loadingPriority, boolean choosable, List<ResourceLocation> powerIds, String name, String description, List<OriginUpgrade> upgrades) {
+public record OriginHolder(Identifier id, ItemStack icon, Impact impact, int order, int loadingPriority, boolean choosable, List<Identifier> powerIds, String name, String description, List<OriginUpgrade> upgrades) {
     public static final StreamCodec<RegistryFriendlyByteBuf, OriginHolder> STREAM_CODEC = ByteBufUtils.composite(
-        ResourceLocation.STREAM_CODEC, OriginHolder::id,
+        Identifier.STREAM_CODEC, OriginHolder::id,
         ItemStack.OPTIONAL_STREAM_CODEC, OriginHolder::icon,
         Impact.STREAM_CODEC, OriginHolder::impact,
         ByteBufCodecs.VAR_INT, OriginHolder::order,
         ByteBufCodecs.VAR_INT, OriginHolder::loadingPriority,
         ByteBufCodecs.BOOL, OriginHolder::choosable,
-        ByteBufCodecs.<ByteBuf, ResourceLocation>list().apply(ResourceLocation.STREAM_CODEC), OriginHolder::powerIds,
+        ByteBufCodecs.<ByteBuf, Identifier>list().apply(Identifier.STREAM_CODEC), OriginHolder::powerIds,
         ByteBufCodecs.STRING_UTF8, OriginHolder::name,
         ByteBufCodecs.STRING_UTF8, OriginHolder::description,
         ByteBufCodecs.<RegistryFriendlyByteBuf, OriginUpgrade>list().apply(OriginsDataTypes.UPGRADE.streamCodec()), OriginHolder::upgrades,
