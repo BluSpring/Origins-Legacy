@@ -13,6 +13,10 @@ public class OriginRegistry {
         return register(origin.getIdentifier(), origin);
     }
 
+    public static Origin register(ResourceLocation id, OriginHolder holder) {
+        return register(id, holder.asOrigin());
+    }
+
     public static Origin register(ResourceLocation id, Origin origin) {
         if(idToOrigin.containsKey(id)) {
             throw new IllegalArgumentException("Duplicate origin id tried to register: '" + id.toString() + "'");

@@ -214,11 +214,11 @@ public class Origin {
         return powerTypes;
     }
 
-    private List<ResourceLocation> getPowerIds() {
+    public List<ResourceLocation> getPowerIds() {
         return powerTypes.stream().map(PowerType::getIdentifier).collect(Collectors.toList());
     }
 
-    private List<OriginUpgrade> getUpgrades() {
+    public List<OriginUpgrade> getUpgrades() {
         return this.upgrades;
     }
 
