@@ -27,7 +27,7 @@ public class ChoseOriginCriterion extends SimpleCriterionTrigger<ChoseOriginCrit
 
     public static ChoseOriginCriterion INSTANCE = new ChoseOriginCriterion();
 
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Origins.MODID, "chose_origin");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Origins.MODID, "chose_origin");
 
     public void trigger(ServerPlayer player, Origin origin) {
         this.trigger(player, (conditions -> conditions.matches(origin)));
