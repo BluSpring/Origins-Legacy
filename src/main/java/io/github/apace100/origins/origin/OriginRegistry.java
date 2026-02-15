@@ -1,9 +1,10 @@
 package io.github.apace100.origins.origin;
 
+import net.minecraft.resources.ResourceLocation;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-import net.minecraft.resources.ResourceLocation;
 
 public class OriginRegistry {
 
@@ -11,6 +12,10 @@ public class OriginRegistry {
 
     public static Origin register(Origin origin) {
         return register(origin.getIdentifier(), origin);
+    }
+
+    public static Origin register(ResourceLocation id, OriginHolder holder) {
+        return register(id, holder.asOrigin());
     }
 
     public static Origin register(ResourceLocation id, Origin origin) {
