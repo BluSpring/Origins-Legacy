@@ -29,6 +29,7 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.serializer.ConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.registry.FabricRegistry;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -104,6 +105,7 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 		});
 
 		Registry.register(BuiltInRegistries.TRIGGER_TYPES, ChoseOriginCriterion.ID, ChoseOriginCriterion.INSTANCE);
+		BuiltInRegistries.TRIGGER_TYPES.addAlias(Origins.identifier("choose_origin"), ChoseOriginCriterion.ID);
 		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Origins.identifier("origin_targets"), OriginTargetsComponent.TYPE);
 
 		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(identifier("origins"), OriginManager::new);
