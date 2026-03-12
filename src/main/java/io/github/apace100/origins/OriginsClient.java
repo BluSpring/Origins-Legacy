@@ -22,6 +22,7 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import org.lwjgl.glfw.GLFW;
 
 public class OriginsClient implements ClientModInitializer {
+    public static final KeyMapping.Category ORIGINS_CATEGORY = KeyMapping.Category.register(Origins.identifier("origins"));
 
     public static KeyMapping usePrimaryActivePowerKeybind;
     public static KeyMapping useSecondaryActivePowerKeybind;
@@ -38,11 +39,9 @@ public class OriginsClient implements ClientModInitializer {
 
         ModPacketsS2C.register();
 
-        KeyMapping.Category keybindCategory = KeyMapping.Category.register(Origins.identifier("origins"));
-
-        usePrimaryActivePowerKeybind = new KeyMapping("key.origins.primary_active", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, keybindCategory);
-        useSecondaryActivePowerKeybind = new KeyMapping("key.origins.secondary_active", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, keybindCategory);
-        viewCurrentOriginKeybind = new KeyMapping("key.origins.view_origin", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, keybindCategory);
+        usePrimaryActivePowerKeybind = new KeyMapping("key.origins.primary_active", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, ORIGINS_CATEGORY);
+        useSecondaryActivePowerKeybind = new KeyMapping("key.origins.secondary_active", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, ORIGINS_CATEGORY);
+        viewCurrentOriginKeybind = new KeyMapping("key.origins.view_origin", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, ORIGINS_CATEGORY);
 
         ApoliClient.registerPowerKeybinding("key.layers.primary_active", usePrimaryActivePowerKeybind);
         ApoliClient.registerPowerKeybinding("key.layers.secondary_active", useSecondaryActivePowerKeybind);
