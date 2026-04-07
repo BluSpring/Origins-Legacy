@@ -7,14 +7,15 @@ import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.registry.ModComponents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.ServerLoginPacketListenerImpl;
+
 import java.util.List;
 import java.util.Random;
 
@@ -27,6 +28,13 @@ public class ModPacketsC2S {
         }
         ServerPlayNetworking.registerGlobalReceiver(ModPackets.CHOOSE_ORIGIN, ModPacketsC2S::chooseOrigin);
         ServerPlayNetworking.registerGlobalReceiver(ModPackets.CHOOSE_RANDOM_ORIGIN, ModPacketsC2S::chooseRandomOrigin);
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            OriginComponent.sync(handler.getPlayer());
+        });
+        ServerPlayerEvents.JOIN.register(OriginComponent::sync);
+        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+            OriginComponent.sync(newPlayer);
+        });
     }
 
     private static void chooseOrigin(ChooseOriginPacket packet, ServerPlayNetworking.Context context) {
