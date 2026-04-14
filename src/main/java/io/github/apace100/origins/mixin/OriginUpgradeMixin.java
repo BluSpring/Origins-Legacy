@@ -6,7 +6,12 @@ import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.origin.OriginUpgrade;
 import io.github.apace100.origins.registry.ModComponents;
+import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementProgress;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,12 +20,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Optional;
-import net.minecraft.ChatFormatting;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementProgress;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.PlayerAdvancements;
-import net.minecraft.server.level.ServerPlayer;
 
 @Mixin(PlayerAdvancements.class)
 public class OriginUpgradeMixin {
@@ -42,7 +41,7 @@ public class OriginUpgradeMixin {
                             component.sync();
                             String announcement = upgrade.get().getAnnouncement();
                             if (!announcement.isEmpty()) {
-                                player.displayClientMessage(Component.translatable(announcement).withStyle(ChatFormatting.GOLD), false);
+                                player.sendSystemMessage(Component.translatable(announcement).withStyle(ChatFormatting.GOLD), false);
                             }
                         }
                     } catch(IllegalArgumentException e) {

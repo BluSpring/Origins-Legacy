@@ -13,8 +13,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.ServerLoginPacketListenerImpl;
+
 import java.util.List;
 import java.util.Random;
 
@@ -123,7 +123,7 @@ public class ModPacketsC2S {
     }
 
     private static void handshake(ServerLoginPacketListenerImpl serverLoginNetworkHandler, MinecraftServer minecraftServer, LoginPacketSender packetSender, ServerLoginNetworking.LoginSynchronizer loginSynchronizer) {
-        packetSender.sendPacket(ModPackets.HANDSHAKE, PacketByteBufs.empty());
+        packetSender.sendPacket(ModPackets.HANDSHAKE, FriendlyByteBufs.empty());
     }
 
     private static void confirmOrigin(ServerPlayer player, OriginLayer layer, Origin origin) {

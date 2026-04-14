@@ -17,7 +17,6 @@
   ],
   "client": [
     "DebugContextMixin",
-    "DrawContextAccessor",
     "ServerCheckMixin",
     "WaterVisibilityMixin"
   ],

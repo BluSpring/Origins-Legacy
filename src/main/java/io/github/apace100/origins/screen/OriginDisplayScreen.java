@@ -4,13 +4,12 @@ import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.badge.Badge;
 import io.github.apace100.origins.badge.BadgeManager;
-import io.github.apace100.origins.mixin.DrawContextAccessor;
 import io.github.apace100.origins.origin.Impact;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
@@ -80,21 +79,21 @@ public class OriginDisplayScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         if(showDirtBackground) {
-            renderMenuBackgroundTexture(guiGraphics, Identifier.withDefaultNamespace("textures/block/dirt.png"), 0, 0, 0.0F, 0.0F, width, height); // Use the dirt texture as a fallback
-            renderTransparentBackground(guiGraphics);
-            renderMenuBackground(guiGraphics); // If the player has a menu background, render that as an overlay I guess?
+            extractMenuBackgroundTexture(guiGraphics, Identifier.withDefaultNamespace("textures/block/dirt.png"), 0, 0, 0.0F, 0.0F, width, height); // Use the dirt texture as a fallback
+            extractTransparentBackground(guiGraphics);
+            extractMenuBackground(guiGraphics); // If the player has a menu background, render that as an overlay I guess?
         } else {
-            super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+            super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
         }
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         renderedBadges.clear();
         this.time += delta;
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
         this.renderOriginWindow(context, mouseX, mouseY);
         if(origin != null) {
             renderScrollbar(context, mouseX, mouseY);
@@ -102,7 +101,7 @@ public class OriginDisplayScreen extends Screen {
         }
     }
 
-    private void renderScrollbar(GuiGraphics context, int mouseX, int mouseY) {
+    private void renderScrollbar(GuiGraphicsExtractor context, int mouseX, int mouseY) {
         if(!canScroll()) {
             return;
         }
@@ -167,7 +166,7 @@ public class OriginDisplayScreen extends Screen {
         return super.mouseDragged(event, deltaX, deltaY);
     }
 
-    private void renderBadgeTooltip(GuiGraphics context, int mouseX, int mouseY) {
+    private void renderBadgeTooltip(GuiGraphicsExtractor context, int mouseX, int mouseY) {
         for(RenderedBadge rb : renderedBadges) {
             if(mouseX >= rb.x &&
                mouseX < rb.x + 9 &&
@@ -175,7 +174,7 @@ public class OriginDisplayScreen extends Screen {
                mouseY < rb.y + 9 &&
                rb.hasTooltip()) {
                 int widthLimit = width - mouseX - 24;
-                context.renderTooltip(font, rb.getTooltipComponents(font, widthLimit), mouseX, mouseY, DefaultTooltipPositioner.INSTANCE, null);
+                context.tooltip(font, rb.getTooltipComponents(font, widthLimit), mouseX, mouseY, DefaultTooltipPositioner.INSTANCE, null);
             }
         }
     }
@@ -184,7 +183,7 @@ public class OriginDisplayScreen extends Screen {
         return Component.nullToEmpty("Origins");
     }
 
-    private void renderOriginWindow(GuiGraphics context, int mouseX, int mouseY) {
+    private void renderOriginWindow(GuiGraphicsExtractor context, int mouseX, int mouseY) {
         //RenderSystem.enableBlend();
         renderWindowBackground(context, 16, 0);
         if(origin != null) {
@@ -201,12 +200,12 @@ public class OriginDisplayScreen extends Screen {
             this.renderOriginImpact(context, mouseX, mouseY);
             context.pose().popMatrix();
             Component title = getTitleText();
-            context.drawCenteredString(this.font, title.getString(), width / 2, guiTop - 15, 0xFFFFFFFF);
+            context.centeredText(this.font, title.getString(), width / 2, guiTop - 15, 0xFFFFFFFF);
         }
         //RenderSystem.disableBlend();
     }
 
-    private void renderOriginImpact(GuiGraphics context, int mouseX, int mouseY) {
+    private void renderOriginImpact(GuiGraphicsExtractor context, int mouseX, int mouseY) {
         Impact impact = getCurrentOrigin().getImpact();
         int impactValue = impact.getImpactValue();
         int wOffset = impactValue * 8;
@@ -224,14 +223,14 @@ public class OriginDisplayScreen extends Screen {
         }
     }
 
-    private void renderOriginName(GuiGraphics context) {
+    private void renderOriginName(GuiGraphicsExtractor context) {
         FormattedText originName = font.substrByWidth(getCurrentOrigin().getName(), windowWidth - 36);
-        context.drawString(font, originName.getString(), guiLeft + 39, guiTop + 19, 0xFFFFFFFF);
+        context.text(font, originName.getString(), guiLeft + 39, guiTop + 19, 0xFFFFFFFF);
         ItemStack is = getCurrentOrigin().getDisplayItem();
-        context.renderItem(is, guiLeft + 15, guiTop + 15);
+        context.item(is, guiLeft + 15, guiTop + 15);
     }
 
-    private void renderWindowBackground(GuiGraphics context, int offsetYStart, int offsetYEnd) {
+    private void renderWindowBackground(GuiGraphicsExtractor context, int offsetYStart, int offsetYEnd) {
         int border = 13;
         int endX = guiLeft + windowWidth - border;
         int endY = guiTop + windowHeight - border;
@@ -250,7 +249,7 @@ public class OriginDisplayScreen extends Screen {
         return retValue;
     }
 
-    private void renderOriginContent(GuiGraphics context, int mouseX, int mouseY) {
+    private void renderOriginContent(GuiGraphicsExtractor context, int mouseX, int mouseY) {
 
         int textWidth = windowWidth - 48;
         // Without this code, the text may not cover the whole width of the window
@@ -272,7 +271,7 @@ public class OriginDisplayScreen extends Screen {
         List<FormattedCharSequence> descLines = font.split(orgDesc, textWidth);
         for(FormattedCharSequence line : descLines) {
             if(y >= startY - 18 && y <= endY + 12) {
-                context.drawString(font, line, x + 2, y - 6, 0xFFCCCCCC, false);
+                context.text(font, line, x + 2, y - 6, 0xFFCCCCCC, false);
             }
             y += 12;
         }
@@ -282,7 +281,7 @@ public class OriginDisplayScreen extends Screen {
             for(FormattedCharSequence line : drawLines) {
                 y += 12;
                 if(y >= startY - 24 && y <= endY + 12) {
-                    context.drawString(font, line, x + 2, y, 0xFFCCCCCC, false);
+                    context.text(font, line, x + 2, y, 0xFFCCCCCC, false);
                 }
             }
             y += 14;
@@ -295,7 +294,7 @@ public class OriginDisplayScreen extends Screen {
                 Component desc = p.getDescription();
                 List<FormattedCharSequence> drawLines = font.split(desc, textWidth);
                 if(y >= startY - 24 && y <= endY + 12) {
-                    context.drawString(font, name, x, y, 0xFFFFFFFF, false);
+                    context.text(font, name, x, y, 0xFFFFFFFF, false);
                     int tw = font.width(name);
                     List<Badge> badges = BadgeManager.getPowerBadges(p.getIdentifier());
                     int xStart = x + tw + 4;
@@ -310,7 +309,7 @@ public class OriginDisplayScreen extends Screen {
                 for(FormattedCharSequence line : drawLines) {
                     y += 12;
                     if(y >= startY - 24 && y <= endY + 12) {
-                        context.drawString(font, line, x + 2, y, 0xFFCCCCCC, false);
+                        context.text(font, line, x + 2, y, 0xFFCCCCCC, false);
                     }
                 }
 

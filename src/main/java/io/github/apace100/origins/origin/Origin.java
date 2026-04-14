@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import io.github.apace100.apoli.power.MultiplePowerType;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.apoli.power.PowerTypeRegistry;
+import io.github.apace100.apoli.util.Lazy;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import io.github.apace100.origins.Origins;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Origin {
@@ -51,7 +53,7 @@ public class Origin {
 
     public static final SerializableData DATA = new SerializableData()
         .add("powers", SerializableDataTypes.IDENTIFIERS, Lists.newArrayList())
-        .add("icon", CompatibilityDataTypes.ITEM_OR_ITEM_STACK, new ItemStack(Items.AIR))
+        .addFunctionedDefault("icon", CompatibilityDataTypes.ITEM_OR_ITEM_STACK, _ -> new ItemStack(Items.AIR))
         .add("unchoosable", SerializableDataTypes.BOOLEAN, false)
         .add("order", SerializableDataTypes.INT, Integer.MAX_VALUE)
         .add("impact", OriginsDataTypes.IMPACT, Impact.NONE)
@@ -63,7 +65,7 @@ public class Origin {
     public static final Origin EMPTY;
 
     static {
-        EMPTY = register(new Origin(Identifier.fromNamespaceAndPath(Origins.MODID, "empty"), new ItemStack(Items.AIR), Impact.NONE, -1, Integer.MAX_VALUE).setUnchoosable().setSpecial());
+        EMPTY = register(new Origin(Identifier.fromNamespaceAndPath(Origins.MODID, "empty"), new Lazy<>(() -> new ItemStack(Items.AIR)), Impact.NONE, -1, Integer.MAX_VALUE).setUnchoosable().setSpecial());
     }
 
     public static void init() {
@@ -87,7 +89,7 @@ public class Origin {
 
     private Identifier identifier;
     private List<PowerType<?>> powerTypes = new LinkedList<>();
-    private final ItemStack displayItem;
+    private final Supplier<ItemStack> displayItem;
     private final Impact impact;
     private boolean isChoosable;
     private final int order;
@@ -100,8 +102,12 @@ public class Origin {
     private String descriptionTranslationKey;
 
     public Origin(Identifier id, ItemStack icon, Impact impact, int order, int loadingPriority) {
+        this(id, () -> icon, impact, order, loadingPriority);
+    }
+
+    public Origin(Identifier id, Supplier<ItemStack> icon, Impact impact, int order, int loadingPriority) {
         this.identifier = id;
-        this.displayItem = icon.copy();
+        this.displayItem = icon;
         this.impact = impact;
         this.isChoosable = true;
         this.order = order;
@@ -109,6 +115,10 @@ public class Origin {
     }
 
     public Origin(Identifier id, ItemStack icon, Impact impact, int order, int loadingPriority, boolean choosable, List<Identifier> powerIds, String name, String description, List<OriginUpgrade> upgrades) {
+        this(id, () -> icon, impact, order, loadingPriority, choosable, powerIds, name, description, upgrades);
+    }
+
+    public Origin(Identifier id, Supplier<ItemStack> icon, Impact impact, int order, int loadingPriority, boolean choosable, List<Identifier> powerIds, String name, String description, List<OriginUpgrade> upgrades) {
         this(id, icon, impact, order, loadingPriority);
         this.isChoosable = choosable;
         this.nameTranslationKey = name;
@@ -220,7 +230,7 @@ public class Origin {
     }
 
     public ItemStack getDisplayItem() {
-        return displayItem;
+        return displayItem.get();
     }
 
     public String getOrCreateNameTranslationKey() {

@@ -7,17 +7,13 @@ import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.EmptyLootItem;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.SetEnchantmentsFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 public class ModLoot {
@@ -27,10 +23,10 @@ public class ModLoot {
     private static final Identifier MINESHAFT = Identifier.withDefaultNamespace("chests/abandoned_mineshaft");
     private static final Identifier WATER_RUIN = Identifier.withDefaultNamespace("chests/underwater_ruin_small");
 
-    public static final LootItemConditionType ORIGIN_LOOT_CONDITION = registerLootCondition("origin", OriginLootCondition.CODEC);
+    public static final MapCodec<? extends LootItemCondition> ORIGIN_LOOT_CONDITION = registerLootCondition("origin", OriginLootCondition.CODEC);
 
-    private static LootItemConditionType registerLootCondition(String path, MapCodec<? extends LootItemCondition> serializer) {
-        return Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, Origins.identifier(path), new LootItemConditionType(serializer));
+    private static MapCodec<? extends LootItemCondition> registerLootCondition(String path, MapCodec<? extends LootItemCondition> serializer) {
+        return Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, Origins.identifier(path), serializer);
     }
 
     public static void registerLootTables() {

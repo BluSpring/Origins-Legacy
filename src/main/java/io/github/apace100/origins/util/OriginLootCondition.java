@@ -1,25 +1,19 @@
 package io.github.apace100.origins.util;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.registry.ModComponents;
-import io.github.apace100.origins.registry.ModLoot;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class OriginLootCondition implements LootItemCondition {
     public static final MapCodec<OriginLootCondition> CODEC = RecordCodecBuilder.mapCodec(instance ->
@@ -47,8 +41,9 @@ public class OriginLootCondition implements LootItemCondition {
         this.layer = layer;
     }
 
-    public LootItemConditionType getType() {
-        return ModLoot.ORIGIN_LOOT_CONDITION;
+    @Override
+    public MapCodec<? extends LootItemCondition> codec() {
+        return CODEC;
     }
 
     public boolean test(LootContext lootContext) {

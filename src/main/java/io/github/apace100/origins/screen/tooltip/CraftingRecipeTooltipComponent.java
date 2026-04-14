@@ -1,16 +1,13 @@
 package io.github.apace100.origins.screen.tooltip;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.apace100.origins.Origins;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.renderer.DynamicUniforms;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Vector4f;
 
 /**A {@link ClientTooltipComponent} used for {@link io.github.apace100.origins.badge.CraftingRecipeBadge}
  * Draws a snapshot of a 3x3 crafting recipe in the tooltip*/
@@ -37,7 +34,7 @@ public class CraftingRecipeTooltipComponent implements ClientTooltipComponent {
     }
 
     @Override
-    public void renderImage(Font textRenderer, int x, int y, int width, int height, GuiGraphics context) {
+    public void extractImage(Font textRenderer, int x, int y, int width, int height, GuiGraphicsExtractor context) {
         this.drawBackground(context, x, y, width, height);
         for(int column = 0; column < 3; ++column) {
             for(int row = 0; row < 3; ++row) {
@@ -45,15 +42,15 @@ public class CraftingRecipeTooltipComponent implements ClientTooltipComponent {
                 int slotX = x + 8 + column * 18;
                 int slotY = y + 8 + row * 18;
                 ItemStack stack = column >= recipeWidth ? ItemStack.EMPTY : inputs.get(index);
-                context.renderItem(stack, slotX, slotY);
-                context.renderItemDecorations(textRenderer, stack, slotX, slotY);
+                context.item(stack, slotX, slotY);
+                context.itemDecorations(textRenderer, stack, slotX, slotY);
             }
         }
-        context.renderItem(output, x + 101, y + 25);
-        context.renderItemDecorations(textRenderer, output, x + 101, y + 25);
+        context.item(output, x + 101, y + 25);
+        context.itemDecorations(textRenderer, output, x + 101, y + 25);
     }
 
-    public void drawBackground(GuiGraphics context, int x, int y, int width, int height) {
+    public void drawBackground(GuiGraphicsExtractor context, int x, int y, int width, int height) {
         context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, 0, 130, 86, 256, 256);
     }
 

@@ -20,11 +20,10 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.FriendlyByteBufs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.PacketSendListener;
 import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
@@ -68,7 +67,7 @@ public class ModPacketsS2C {
 
     @Environment(EnvType.CLIENT)
     private static CompletableFuture<FriendlyByteBuf> handleHandshake(Minecraft minecraftClient, ClientHandshakePacketListenerImpl clientLoginNetworkHandler, FriendlyByteBuf packetByteBuf, Consumer<ChannelFutureListener> genericFutureListenerConsumer) {
-        FriendlyByteBuf buf = PacketByteBufs.create();
+        FriendlyByteBuf buf = FriendlyByteBufs.create();
         buf.writeInt(Origins.SEMVER.length);
         for(int i = 0; i < Origins.SEMVER.length; i++) {
             buf.writeInt(Origins.SEMVER[i]);

@@ -7,9 +7,10 @@ import com.google.gson.JsonObject;
 import io.github.apace100.calio.data.MultiJsonDataLoader;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.integration.OriginDataLoadedCallback;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -17,18 +18,23 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class OriginLayers extends MultiJsonDataLoader implements IdentifiableResourceReloadListener {
+public class OriginLayers extends MultiJsonDataLoader implements PreparableReloadListener {
 
     private static final HashMap<Identifier, OriginLayer> layers = new HashMap<>();
     private static int minLayerPriority = Integer.MIN_VALUE;
 
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 
-    private final HolderLookup.Provider provider;
+    private HolderLookup.Provider provider;
 
-    public OriginLayers(HolderLookup.Provider provider) {
+    public OriginLayers() {
         super(GSON, "origin_layers");
-        this.provider = provider;
+    }
+
+    @Override
+    public void prepareSharedState(SharedState currentReload) {
+        super.prepareSharedState(currentReload);
+        this.provider = currentReload.get(ResourceLoader.REGISTRY_LOOKUP_KEY);
     }
 
     @Override
@@ -97,15 +103,5 @@ public class OriginLayers extends MultiJsonDataLoader implements IdentifiableRes
 
     public static void add(OriginLayer layer) {
         layers.put(layer.getIdentifier(), layer);
-    }
-
-    @Override
-    public Identifier getFabricId() {
-        return Identifier.fromNamespaceAndPath(Origins.MODID, "origin_layers");
-    }
-
-    @Override
-    public Collection<Identifier> getFabricDependencies() {
-        return Set.of(Origins.identifier("origins"));
     }
 }

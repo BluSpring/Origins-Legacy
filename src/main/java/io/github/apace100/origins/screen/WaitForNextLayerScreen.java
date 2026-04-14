@@ -3,12 +3,13 @@ package io.github.apace100.origins.screen;
 import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.registry.ModComponents;
-import java.util.ArrayList;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+
+import java.util.ArrayList;
 
 public class WaitForNextLayerScreen extends Screen {
 
@@ -42,20 +43,20 @@ public class WaitForNextLayerScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         if(maxSelection == 0) {
             openSelection();
             return;
         }
-        this.renderBackground(context, mouseX, mouseY, delta);
+        this.extractBackground(context, mouseX, mouseY, delta);
     }
 
     @Override
-    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         if(showDirtBackground) {
-            super.renderMenuBackground(context);
+            super.extractMenuBackground(context);
         } else {
-            super.renderTransparentBackground(context);
+            super.extractTransparentBackground(context);
         }
     }
 }

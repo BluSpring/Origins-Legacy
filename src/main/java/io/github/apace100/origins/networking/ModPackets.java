@@ -22,15 +22,15 @@ public class ModPackets {
     public static final CustomPacketPayload.Type<PowersAndOriginsPacket> POWERS_AND_ORIGINS = new CustomPacketPayload.Type<>(Origins.identifier("powers_and_origins"));
     
     public static void init() {
-        PayloadTypeRegistry.playS2C().register(OPEN_ORIGIN_SCREEN, OpenOriginScreenPacket.CODEC);
-        PayloadTypeRegistry.playC2S().register(CHOOSE_ORIGIN, ChooseOriginPacket.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(OPEN_ORIGIN_SCREEN, OpenOriginScreenPacket.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(CHOOSE_ORIGIN, ChooseOriginPacket.CODEC);
 
-        PayloadTypeRegistry.playS2C().register(ORIGIN_LIST, OriginListPacket.CODEC);
-        PayloadTypeRegistry.playS2C().register(LAYER_LIST, LayerListPacket.CODEC);
-        PayloadTypeRegistry.playC2S().register(CHOOSE_RANDOM_ORIGIN, ChooseRandomOriginPacket.CODEC);
-        PayloadTypeRegistry.playS2C().register(CONFIRM_ORIGIN, ConfirmOriginPacket.CODEC);
-        PayloadTypeRegistry.playS2C().register(BADGE_LIST, BadgeListPacket.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ORIGIN_LIST, OriginListPacket.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(LAYER_LIST, LayerListPacket.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(CHOOSE_RANDOM_ORIGIN, ChooseRandomOriginPacket.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(CONFIRM_ORIGIN, ConfirmOriginPacket.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(BADGE_LIST, BadgeListPacket.CODEC);
 
-        PayloadTypeRegistry.playS2C().register(POWERS_AND_ORIGINS, PowersAndOriginsPacket.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(POWERS_AND_ORIGINS, PowersAndOriginsPacket.CODEC);
     }
 }

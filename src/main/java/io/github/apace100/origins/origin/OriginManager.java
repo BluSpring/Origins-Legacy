@@ -3,28 +3,35 @@ package io.github.apace100.origins.origin;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import io.github.apace100.apoli.Apoli;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.calio.data.MultiJsonDataLoader;
 import io.github.apace100.origins.Origins;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class OriginManager extends MultiJsonDataLoader implements IdentifiableResourceReloadListener {
+public class OriginManager extends MultiJsonDataLoader implements PreparableReloadListener {
 	
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 
-	private final HolderLookup.Provider provider;
+	private HolderLookup.Provider provider;
 
-	public OriginManager(HolderLookup.Provider provider) {
+	public OriginManager() {
 		super(GSON, "origins");
-		this.provider = provider;
+	}
+
+	@Override
+	public void prepareSharedState(SharedState currentReload) {
+		super.prepareSharedState(currentReload);
+		this.provider = currentReload.get(ResourceLoader.REGISTRY_LOOKUP_KEY);
 	}
 
 	@Override
@@ -66,15 +73,5 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 		if(hasConfigChanged.get()) {
 			Origins.serializeConfig();
 		}
-	}
-
-	@Override
-	public Identifier getFabricId() {
-		return Identifier.fromNamespaceAndPath(Origins.MODID, "origins");
-	}
-
-	@Override
-	public Collection<Identifier> getFabricDependencies() {
-		return Set.of(Apoli.identifier("powers"));
 	}
 }

@@ -1,11 +1,10 @@
 import me.modmuss50.mpp.ModPublishExtension
 import me.modmuss50.mpp.ReleaseType
-import net.fabricmc.loom.task.RemapJarTask
 import java.net.HttpURLConnection
 import java.net.URI
 
 plugins {
-	id("fabric-loom") version "1.14-SNAPSHOT"
+	id("net.fabricmc.fabric-loom") version "1.16-SNAPSHOT"
 	`maven-publish`
 	id("me.modmuss50.mod-publish-plugin") version "0.7.+"
 }
@@ -29,9 +28,9 @@ allprojects {
 }
 
 subprojects {
-	apply(plugin = "fabric-loom")
+	apply(plugin = "net.fabricmc.fabric-loom")
 
-	rootProject.tasks.getByName<RemapJarTask>("remapJar").nestedJars.from(project.tasks.getByName("remapJar"))
+//	rootProject.tasks.getByName<RemapJarTask>("remapJar").nestedJars.from(project.tasks.getByName("remapJar")) // TODO O-L: fix
 
 	loom {
 		mixin {
@@ -84,27 +83,24 @@ repositories {
 dependencies {
 	//to change the versions see the gradle.properties file
 	minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
-	mappings(loom.layered {
-		officialMojangMappings()
-		parchment("org.parchmentmc.data:parchment-${project.property("parchment_version")}:${project.property("parchment_snapshot")}@zip")
-	})
-	modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
+
+	implementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+	implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
-	implementation(project(":apoli", "namedElements"))
-	implementation(project(":calio", "namedElements"))
+	implementation(project(":apoli"))
+	implementation(project(":calio"))
 
-	modApi("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${property("cca_version")}")
-	modApi("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")
+	api("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${property("cca_version")}")
+	api("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")
 
-	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.property("clothconfig_version")}") {
+	api("me.shedaniel.cloth:cloth-config-fabric:${project.property("clothconfig_version")}") {
 		exclude(group = "net.fabricmc.fabric-api")
 	}
 
-	modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
-	modRuntimeOnly("maven.modrinth:lithium:mc1.21.11-0.21.1-fabric")
+	implementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
+	runtimeOnly("maven.modrinth:lithium:mc26.1.2-0.24.1-fabric")
 
 	include(implementation("com.moulberry:mixinconstraints:1.0.8")!!)
 }
@@ -124,10 +120,10 @@ tasks.processResources {
 // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
 tasks.withType<JavaCompile>().configureEach {
 	options.encoding = "UTF-8"
-	options.release.set(17)
+	options.release.set(25)
 }
 
-val targetJavaVersion = "17"
+val targetJavaVersion = "25"
 
 java {
 	val javaVersion = JavaVersion.toVersion(targetJavaVersion)
@@ -174,7 +170,7 @@ publishing {
 }
 
 project.extensions.configure<ModPublishExtension>("publishMods") {
-	file = project.tasks.named<RemapJarTask>("remapJar").get().archiveFile
+	file = project.tasks.named<Jar>("jar").get().archiveFile
 	displayName = "Origins: Legacy v${project.version}"
 	version = project.version as String
 	changelog = System.getenv("RELEASE_DESCRIPTION") ?: ""
@@ -187,7 +183,7 @@ project.extensions.configure<ModPublishExtension>("publishMods") {
 	modrinth {
 		projectId = project.property("publishing.modrinth").toString()
 		accessToken = providers.environmentVariable("MODRINTH_TOKEN")
-		minecraftVersions.add(project.property("minecraft_version") as String)
+		minecraftVersions.addAll((project.property("supported_versions") as String).split(","))
 
 		requires("fabric-api")
 		embeds("cloth-config", "cardinal-components-api", "pal", "additionalentityattributes")
@@ -197,7 +193,7 @@ project.extensions.configure<ModPublishExtension>("publishMods") {
 		type = ReleaseType.STABLE
 		projectId = project.property("publishing.curseforge").toString()
 		accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
-		minecraftVersions.add(project.property("minecraft_version") as String)
+		minecraftVersions.addAll((project.property("supported_versions") as String).split(","))
 
 		requires("fabric-api")
 		embeds("cloth-config", "cardinal-components-api", "pal")

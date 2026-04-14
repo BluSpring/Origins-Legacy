@@ -10,7 +10,7 @@ import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.registry.ModItems;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -139,11 +139,11 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 	}
 
 	@Override
-	public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		if(maxSelection == 0) {
 			openNextLayerScreen();
 			return;
 		}
-		super.render(context, mouseX, mouseY, delta);
+		super.extractRenderState(context, mouseX, mouseY, delta);
 	}
 }

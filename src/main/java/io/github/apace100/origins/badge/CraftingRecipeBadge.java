@@ -4,23 +4,23 @@ import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.screen.tooltip.CraftingRecipeTooltipComponent;
-import net.minecraft.world.item.crafting.*;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.LinkedList;
-import java.util.List;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public record CraftingRecipeBadge(Identifier spriteId,
                                   Recipe<CraftingInput> recipe,
@@ -63,13 +63,13 @@ public record CraftingRecipeBadge(Identifier spriteId,
             Component recipeIdText = Component.empty(); // TODO O-L: we don't have access to this data.
             widthLimit = Math.max(130, textRenderer.width(recipeIdText));
             if(prefix != null) TooltipBadge.addLines(tooltips, prefix, textRenderer, widthLimit);
-            tooltips.add(new CraftingRecipeTooltipComponent(recipeWidth, this.peekInputs(time), this.recipe.assemble(CraftingInput.of(3, 3, this.peekInputs(time)), dynamicRegistryManager)));
+            tooltips.add(new CraftingRecipeTooltipComponent(recipeWidth, this.peekInputs(time), this.recipe.assemble(CraftingInput.of(3, 3, this.peekInputs(time)))));
             if(suffix != null) TooltipBadge.addLines(tooltips, suffix, textRenderer, widthLimit);
             TooltipBadge.addLines(tooltips, recipeIdText, textRenderer, widthLimit);
         } else {
             widthLimit = 130;
             if(prefix != null) TooltipBadge.addLines(tooltips, prefix, textRenderer, widthLimit);
-            tooltips.add(new CraftingRecipeTooltipComponent(recipeWidth, this.peekInputs(time), this.recipe.assemble(CraftingInput.of(3, 3, this.peekInputs(time)), dynamicRegistryManager)));
+            tooltips.add(new CraftingRecipeTooltipComponent(recipeWidth, this.peekInputs(time), this.recipe.assemble(CraftingInput.of(3, 3, this.peekInputs(time)))));
             if(suffix != null) TooltipBadge.addLines(tooltips, suffix, textRenderer, widthLimit);
         }
         return tooltips;

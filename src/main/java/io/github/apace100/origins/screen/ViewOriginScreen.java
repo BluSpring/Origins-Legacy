@@ -6,11 +6,8 @@ import io.github.apace100.origins.OriginsClient;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.registry.ModComponents;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -19,6 +16,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ResolvableProfile;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 
 public class ViewOriginScreen extends OriginDisplayScreen {
 
@@ -88,13 +89,13 @@ public class ViewOriginScreen extends OriginDisplayScreen {
 	}
 	
 	@Override
-	public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-		super.render(context, mouseX, mouseY, delta);
+	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+		super.extractRenderState(context, mouseX, mouseY, delta);
 		if(originLayers.size() == 0) {
 			if(OriginsClient.isServerRunningOrigins) {
-				context.drawCenteredString(this.font, Component.translatable(Origins.MODID + ".gui.view_origin.empty").getString(), width / 2, guiTop + 48, 0xFFFFFFFF);
+				context.centeredText(this.font, Component.translatable(Origins.MODID + ".gui.view_origin.empty").getString(), width / 2, guiTop + 48, 0xFFFFFFFF);
 			} else {
-				context.drawCenteredString(this.font, Component.translatable(Origins.MODID + ".gui.view_origin.not_installed").getString(), width / 2, guiTop + 48, 0xFFFFFFFF);
+				context.centeredText(this.font, Component.translatable(Origins.MODID + ".gui.view_origin.not_installed").getString(), width / 2, guiTop + 48, 0xFFFFFFFF);
 			}
 		}
 	}
