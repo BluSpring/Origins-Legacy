@@ -1,5 +1,6 @@
 package io.github.apace100.origins.screen;
 
+import io.github.apace100.calio.util.LazyItemStack;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.networking.ChooseOriginPacket;
 import io.github.apace100.origins.networking.ChooseRandomOriginPacket;
@@ -122,7 +123,7 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 	}
 
 	private void initRandomOrigin() {
-		this.randomOrigin = new Origin(Origins.identifier("random"), new ItemStack(ModItems.ORB_OF_ORIGIN), Impact.NONE, -1, Integer.MAX_VALUE);
+		this.randomOrigin = new Origin(Origins.identifier("random"), new LazyItemStack(ModItems.ORB_OF_ORIGIN), Impact.NONE, -1, Integer.MAX_VALUE);
 		MutableComponent randomOriginText = (MutableComponent)Component.nullToEmpty("");
 		List<Identifier> randoms = layerList.get(currentLayerIndex).getRandomOrigins(Minecraft.getInstance().player);
 		randoms.sort((ia, ib) -> {

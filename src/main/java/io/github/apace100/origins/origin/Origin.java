@@ -8,6 +8,7 @@ import io.github.apace100.apoli.power.PowerTypeRegistry;
 import io.github.apace100.apoli.util.Lazy;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
+import io.github.apace100.calio.util.LazyItemStack;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.data.CompatibilityDataTypes;
 import io.github.apace100.origins.data.OriginsDataTypes;
@@ -53,7 +54,7 @@ public class Origin {
 
     public static final SerializableData DATA = new SerializableData()
         .add("powers", SerializableDataTypes.IDENTIFIERS, Lists.newArrayList())
-        .addFunctionedDefault("icon", CompatibilityDataTypes.ITEM_OR_ITEM_STACK, _ -> new ItemStack(Items.AIR))
+        .add("icon", CompatibilityDataTypes.ITEM_OR_ITEM_STACK, new LazyItemStack(Items.AIR))
         .add("unchoosable", SerializableDataTypes.BOOLEAN, false)
         .add("order", SerializableDataTypes.INT, Integer.MAX_VALUE)
         .add("impact", OriginsDataTypes.IMPACT, Impact.NONE)
@@ -101,8 +102,8 @@ public class Origin {
     private String nameTranslationKey;
     private String descriptionTranslationKey;
 
-    public Origin(Identifier id, ItemStack icon, Impact impact, int order, int loadingPriority) {
-        this(id, () -> icon, impact, order, loadingPriority);
+    public Origin(Identifier id, LazyItemStack icon, Impact impact, int order, int loadingPriority) {
+        this(id, (Supplier<ItemStack>) icon, impact, order, loadingPriority);
     }
 
     public Origin(Identifier id, Supplier<ItemStack> icon, Impact impact, int order, int loadingPriority) {
@@ -278,7 +279,7 @@ public class Origin {
     @SuppressWarnings("unchecked")
     public static Origin createFromData(Identifier id, SerializableData.Instance data) {
         Origin origin = new Origin(id,
-            (ItemStack)data.get("icon"),
+            (LazyItemStack)data.get("icon"),
             (Impact)data.get("impact"),
             data.getInt("order"),
             data.getInt("loading_priority"));
