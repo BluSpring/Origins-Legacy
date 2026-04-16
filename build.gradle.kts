@@ -30,8 +30,6 @@ allprojects {
 subprojects {
 	apply(plugin = "net.fabricmc.fabric-loom")
 
-//	rootProject.tasks.getByName<RemapJarTask>("remapJar").nestedJars.from(project.tasks.getByName("remapJar")) // TODO O-L: fix
-
 	loom {
 		mixin {
 			showMessageTypes.set(true)
@@ -89,8 +87,8 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
-	implementation(project(":apoli"))
-	implementation(project(":calio"))
+	include(implementation(project(":apoli"))!!)
+	include(implementation(project(":calio"))!!)
 
 	api("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${property("cca_version")}")
 	api("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")
