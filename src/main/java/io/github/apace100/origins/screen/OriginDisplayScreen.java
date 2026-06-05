@@ -194,6 +194,7 @@ public class OriginDisplayScreen extends Screen {
         context.blit(RenderPipelines.GUI_TEXTURED, WINDOW, guiLeft, guiTop, 0, 0, windowWidth, windowWidth, windowWidth, windowHeight, 256, 256);
         if(origin != null) {
             context.pose().pushMatrix();
+            context.pose().translate(0, -1);
             //context.pose().translate(0, 0, 5);
             renderOriginName(context);
             //RenderSystem.setShaderTexture(0, WINDOW);
