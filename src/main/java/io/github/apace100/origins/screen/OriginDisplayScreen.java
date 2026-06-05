@@ -4,7 +4,6 @@ import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.badge.Badge;
 import io.github.apace100.origins.badge.BadgeManager;
-import io.github.apace100.origins.mixin.DrawContextAccessor;
 import io.github.apace100.origins.origin.Impact;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
@@ -15,7 +14,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -201,7 +199,7 @@ public class OriginDisplayScreen extends Screen {
             this.renderOriginImpact(context, mouseX, mouseY);
             context.pose().popMatrix();
             Component title = getTitleText();
-            context.drawCenteredString(this.font, title.getString(), width / 2, guiTop - 15, 0xFFFFFF);
+            context.drawCenteredString(this.font, title.getString(), width / 2, guiTop - 15, 0xFFFFFFFF);
         }
         //RenderSystem.disableBlend();
     }
@@ -226,7 +224,7 @@ public class OriginDisplayScreen extends Screen {
 
     private void renderOriginName(GuiGraphics context) {
         FormattedText originName = font.substrByWidth(getCurrentOrigin().getName(), windowWidth - 36);
-        context.drawString(font, originName.getString(), guiLeft + 39, guiTop + 19, 0xFFFFFF);
+        context.drawString(font, originName.getString(), guiLeft + 39, guiTop + 19, 0xFFFFFFFF);
         ItemStack is = getCurrentOrigin().getDisplayItem();
         context.renderItem(is, guiLeft + 15, guiTop + 15);
     }
@@ -272,7 +270,7 @@ public class OriginDisplayScreen extends Screen {
         List<FormattedCharSequence> descLines = font.split(orgDesc, textWidth);
         for(FormattedCharSequence line : descLines) {
             if(y >= startY - 18 && y <= endY + 12) {
-                context.drawString(font, line, x + 2, y - 6, 0xCCCCCC, false);
+                context.drawString(font, line, x + 2, y - 6, 0xFFCCCCCC, false);
             }
             y += 12;
         }
@@ -282,7 +280,7 @@ public class OriginDisplayScreen extends Screen {
             for(FormattedCharSequence line : drawLines) {
                 y += 12;
                 if(y >= startY - 24 && y <= endY + 12) {
-                    context.drawString(font, line, x + 2, y, 0xCCCCCC, false);
+                    context.drawString(font, line, x + 2, y, 0xFFCCCCCC, false);
                 }
             }
             y += 14;
@@ -295,7 +293,7 @@ public class OriginDisplayScreen extends Screen {
                 Component desc = p.getDescription();
                 List<FormattedCharSequence> drawLines = font.split(desc, textWidth);
                 if(y >= startY - 24 && y <= endY + 12) {
-                    context.drawString(font, name, x, y, 0xFFFFFF, false);
+                    context.drawString(font, name, x, y, 0xFFFFFFFF, false);
                     int tw = font.width(name);
                     List<Badge> badges = BadgeManager.getPowerBadges(p.getIdentifier());
                     int xStart = x + tw + 4;
@@ -310,7 +308,7 @@ public class OriginDisplayScreen extends Screen {
                 for(FormattedCharSequence line : drawLines) {
                     y += 12;
                     if(y >= startY - 24 && y <= endY + 12) {
-                        context.drawString(font, line, x + 2, y, 0xCCCCCC, false);
+                        context.drawString(font, line, x + 2, y, 0xFFCCCCCC, false);
                     }
                 }
 
