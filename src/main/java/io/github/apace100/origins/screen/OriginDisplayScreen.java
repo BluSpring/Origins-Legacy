@@ -4,7 +4,6 @@ import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.badge.Badge;
 import io.github.apace100.origins.badge.BadgeManager;
-import io.github.apace100.origins.mixin.DrawContextAccessor;
 import io.github.apace100.origins.origin.Impact;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
@@ -195,6 +194,7 @@ public class OriginDisplayScreen extends Screen {
         context.blit(RenderPipelines.GUI_TEXTURED, WINDOW, guiLeft, guiTop, 0, 0, windowWidth, windowWidth, windowWidth, windowHeight, 256, 256);
         if(origin != null) {
             context.pose().pushMatrix();
+            context.pose().translate(0, -1);
             //context.pose().translate(0, 0, 5);
             renderOriginName(context);
             //RenderSystem.setShaderTexture(0, WINDOW);
