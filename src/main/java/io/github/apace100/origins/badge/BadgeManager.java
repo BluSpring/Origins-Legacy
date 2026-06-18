@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import io.github.apace100.apoli.integration.PostPowerLoadCallback;
 import io.github.apace100.apoli.integration.PrePowerReloadCallback;
 import io.github.apace100.apoli.power.*;
-import io.github.apace100.calio.registry.DataObjectRegistry;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.integration.AutoBadgeCallback;
 import io.github.apace100.origins.networking.BadgeListPacket;

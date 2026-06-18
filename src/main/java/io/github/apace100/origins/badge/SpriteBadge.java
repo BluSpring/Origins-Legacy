@@ -1,18 +1,23 @@
 package io.github.apace100.origins.badge;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.apoli.power.PowerType;
-import io.github.apace100.calio.data.SerializableData;
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.resources.Identifier;
 
-public record SpriteBadge(Identifier spriteId) implements Badge {
+import java.util.ArrayList;
+import java.util.List;
 
-    public SpriteBadge(SerializableData.Instance instance) {
-        this(instance.getId("sprite"));
-    }
+public record SpriteBadge(Identifier spriteId) implements Badge {
+    public static final MapCodec<SpriteBadge> CODEC = RecordCodecBuilder.mapCodec(instance ->
+        instance.group(
+            Identifier.CODEC.fieldOf("sprite")
+                .forGetter(SpriteBadge::spriteId)
+        )
+            .apply(instance, SpriteBadge::new)
+    );
 
     @Override
     public boolean hasTooltip() {
@@ -25,14 +30,7 @@ public record SpriteBadge(Identifier spriteId) implements Badge {
     }
 
     @Override
-    public SerializableData.Instance toData(SerializableData.Instance instance) {
-        instance.set("sprite", spriteId);
-        return instance;
+    public MapCodec<? extends Badge> codec() {
+        return CODEC;
     }
-
-    @Override
-    public BadgeFactory getBadgeFactory() {
-        return BadgeFactories.SPRITE;
-    }
-
 }

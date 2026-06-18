@@ -1,7 +1,8 @@
 package io.github.apace100.origins.badge;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.apoli.power.PowerType;
-import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.screen.tooltip.CraftingRecipeTooltipComponent;
 import net.minecraft.client.Minecraft;
@@ -26,7 +27,13 @@ public record CraftingRecipeBadge(Identifier spriteId,
                                   Recipe<CraftingInput> recipe,
                                   @Nullable Component prefix,
                                   @Nullable Component suffix) implements Badge {
+    public static final MapCodec<CraftingRecipeBadge> CODEC = RecordCodecBuilder.mapCodec(instance ->
+        instance.group(
+            Identifier.CODEC.fieldOf("spriteId")
+                .forGetter(CraftingRecipeBadge::spriteId),
 
+        )
+    );
     public CraftingRecipeBadge(SerializableData.Instance instance) {
         this(instance.getId("sprite"),
             instance.get("recipe"),

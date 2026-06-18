@@ -1,16 +1,14 @@
 package io.github.apace100.origins;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.mojang.serialization.JsonOps;
 import io.github.apace100.apoli.Apoli;
-import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.apoli.util.NamespaceAlias;
-import io.github.apace100.calio.resource.OrderedResourceListenerInitializer;
-import io.github.apace100.calio.resource.OrderedResourceListenerManager;
 import io.github.apace100.origins.badge.BadgeManager;
 import io.github.apace100.origins.command.OriginCommand;
 import io.github.apace100.origins.component.OriginTargetsComponent;
+import io.github.apace100.origins.config.ServerConfig;
 import io.github.apace100.origins.networking.ModPackets;
 import io.github.apace100.origins.networking.ModPacketsC2S;
 import io.github.apace100.origins.origin.Origin;
@@ -20,12 +18,6 @@ import io.github.apace100.origins.power.OriginsEntityConditions;
 import io.github.apace100.origins.power.OriginsPowerTypes;
 import io.github.apace100.origins.registry.*;
 import io.github.apace100.origins.util.ChoseOriginCriterion;
-import io.github.apace100.origins.util.OriginsConfigSerializer;
-import io.github.apace100.origins.util.OriginsJsonConfigSerializer;
-import me.shedaniel.autoconfig.AutoConfig;
-import me.shedaniel.autoconfig.ConfigData;
-import me.shedaniel.autoconfig.annotation.Config;
-import me.shedaniel.autoconfig.serializer.ConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
@@ -36,13 +28,15 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.CreativeModeTabs;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
-public class Origins implements ModInitializer, OrderedResourceListenerInitializer {
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+
+public class Origins implements ModInitializer {
 
 	public static final String MODID = "origins";
 	public static final String LEGACY_MODID = "origins_legacy";
@@ -52,13 +46,18 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 	public static final Logger LOGGER = LogManager.getLogger(Origins.class);
 
 	public static ServerConfig config;
-	private static ConfigSerializer<ServerConfig> configSerializer;
+    private static final Gson GSON = new GsonBuilder()
+        .disableHtmlEscaping()
+        .setPrettyPrinting()
+        .create();
 
 	@Override
 	public void onInitialize() {
 		if (FabricLoader.getInstance().isDevelopmentEnvironment() && System.getProperty("origins.audit", "false").equalsIgnoreCase("true")) {
 			MixinEnvironment.getCurrentEnvironment().audit();
 		}
+
+        registerResourceListeners();
 
 		ModPackets.init();
 		FabricLoader.getInstance().getModContainer(MODID).ifPresent(modContainer -> {
@@ -76,14 +75,6 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 			}
 		});
 		LOGGER.info("Origins " + VERSION + " is initializing. Have fun!");
-
-		AutoConfig.register(ServerConfig.class,
-			(definition, configClass) -> {
-				configSerializer = new OriginsJsonConfigSerializer<>(definition, configClass,
-					new OriginsConfigSerializer<>(definition, configClass));
-				return configSerializer;
-			});
-		config = AutoConfig.getConfigHolder(ServerConfig.class).getConfig();
 
 		NamespaceAlias.addAlias(MODID, Apoli.MODID);
 		NamespaceAlias.addAlias(LEGACY_MODID, Apoli.LEGACY_MODID);
@@ -113,8 +104,10 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 
 	public static void serializeConfig() {
 		try {
-			configSerializer.serialize(config);
-		} catch (ConfigSerializer.SerializationException e) {
+            var path = FabricLoader.getInstance().getConfigDir().resolve(MODID + "_server.json");
+            var json = ServerConfig.CODEC.encodeStart(JsonOps.INSTANCE, config).getOrThrow();
+            Files.writeString(path, GSON.toJson(json), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+		} catch (Throwable e) {
 			Origins.LOGGER.error("Failed serialization of config file: " + e.getMessage());
 		}
 	}
@@ -127,83 +120,24 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 		return Identifier.fromNamespaceAndPath(LEGACY_MODID, path);
 	}
 
-	@Override
-	public void registerResourceListeners(OrderedResourceListenerManager manager) {
-		ResourceLoader loader = ResourceLoader.get(PackType.SERVER_DATA);
-		Identifier powerData = Apoli.identifier("powers");
-		Identifier originData = Origins.identifier("origins");
-		Identifier layerData = Origins.identifier("origin_layers");
+	public void registerResourceListeners() {
+        ResourceLoader loader = ResourceLoader.get(PackType.SERVER_DATA);
+        Identifier powerData = Apoli.identifier("powers");
+        Identifier originData = Origins.identifier("origins");
+        Identifier layerData = Origins.identifier("origin_layers");
 
-		loader.registerReloadListener(originData, new OriginManager());
-		loader.addListenerOrdering(powerData, originData);
+        loader.registerReloadListener(originData, new OriginManager());
+        loader.addListenerOrdering(powerData, originData);
 
-		loader.registerReloadListener(layerData, new OriginLayers());
-		loader.addListenerOrdering(originData, layerData);
+        loader.registerReloadListener(layerData, new OriginLayers());
+        loader.addListenerOrdering(originData, layerData);
 
-		BadgeManager.init();
+        BadgeManager.init();
 
-		IdentifiableResourceReloadListener badgeLoader = BadgeManager.REGISTRY.getLoader();
-		loader.registerReloadListener(badgeLoader.getFabricId(), badgeLoader);
-		loader.addListenerOrdering(powerData, badgeLoader.getFabricId());
+        IdentifiableResourceReloadListener badgeLoader = BadgeManager.REGISTRY.getLoader();
+        loader.registerReloadListener(badgeLoader.getFabricId(), badgeLoader);
+        loader.addListenerOrdering(powerData, badgeLoader.getFabricId());
 
-		loader.addListenerOrdering(badgeLoader.getFabricId(), powerData);
-	}
-
-	@Config(name = Origins.MODID + "_server")
-	public static class ServerConfig implements ConfigData {
-
-		public boolean performVersionCheck = true;
-
-		public JsonObject origins = new JsonObject();
-
-		public boolean isOriginDisabled(Identifier originId) {
-			String idString = originId.toString();
-			if(!origins.has(idString)) {
-				return false;
-			}
-			JsonElement element = origins.get(idString);
-			if(element instanceof JsonObject jsonObject) {
-				return !GsonHelper.getAsBoolean(jsonObject, "enabled", true);
-			}
-			return false;
-		}
-
-		public boolean isPowerDisabled(Identifier originId, Identifier powerId) {
-			String originIdString = originId.toString();
-			if(!origins.has(originIdString)) {
-				return false;
-			}
-			String powerIdString = powerId.toString();
-			JsonElement element = origins.get(originIdString);
-			if(element instanceof JsonObject jsonObject) {
-				return !GsonHelper.getAsBoolean(jsonObject, powerIdString, true);
-			}
-			return false;
-		}
-
-		public boolean addToConfig(Origin origin) {
-			boolean changed = false;
-			String originIdString = origin.getIdentifier().toString();
-			JsonObject originObj;
-			if(!origins.has(originIdString) || !(origins.get(originIdString) instanceof JsonObject)) {
-				originObj = new JsonObject();
-				origins.add(originIdString, originObj);
-				changed = true;
-			} else {
-				originObj = (JsonObject) origins.get(originIdString);
-			}
-			if(!originObj.has("enabled") || !(originObj.get("enabled") instanceof JsonPrimitive)) {
-				originObj.addProperty("enabled", Boolean.TRUE);
-				changed = true;
-			}
-			for(PowerType<?> power : origin.getPowerTypes()) {
-				String powerIdString = power.getIdentifier().toString();
-				if(!originObj.has(powerIdString) || !(originObj.get(powerIdString) instanceof JsonPrimitive)) {
-					originObj.addProperty(powerIdString, Boolean.TRUE);
-					changed = true;
-				}
-			}
-			return changed;
-		}
+        loader.addListenerOrdering(badgeLoader.getFabricId(), powerData);
 	}
 }

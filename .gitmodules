@@ -1,6 +1,3 @@
 [submodule "apoli"]
 	path = apoli
 	url = https://github.com/BluSpring/apoli-legacy.git
-[submodule "calio"]
-	path = calio
-	url = https://github.com/BluSpring/calio-legacy.git

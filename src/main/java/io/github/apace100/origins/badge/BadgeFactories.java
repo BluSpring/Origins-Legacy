@@ -6,11 +6,6 @@ import io.github.apace100.origins.Origins;
 
 public final class BadgeFactories {
 
-    public static final BadgeFactory SPRITE = new BadgeFactory(Origins.identifier("sprite"),
-        new SerializableData()
-            .add("sprite", SerializableDataTypes.IDENTIFIER),
-        SpriteBadge::new);
-
     public static final BadgeFactory TOOLTIP = new BadgeFactory(Origins.identifier("tooltip"),
         new SerializableData()
             .add("sprite", SerializableDataTypes.IDENTIFIER)

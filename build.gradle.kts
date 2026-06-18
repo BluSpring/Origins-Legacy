@@ -88,14 +88,6 @@ dependencies {
 	implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
 	include(implementation(project(":apoli"))!!)
-	include(implementation(project(":calio"))!!)
-
-	api("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${property("cca_version")}")
-	api("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${property("cca_version")}")
-
-	api("me.shedaniel.cloth:cloth-config-fabric:${project.property("clothconfig_version")}") {
-		exclude(group = "net.fabricmc.fabric-api")
-	}
 
 	implementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
 	runtimeOnly("maven.modrinth:lithium:mc26.1.2-0.24.1-fabric")
