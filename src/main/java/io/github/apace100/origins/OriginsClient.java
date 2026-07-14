@@ -52,8 +52,8 @@ public class OriginsClient implements ClientModInitializer {
 
         ClientTickEvents.START_CLIENT_TICK.register(tick -> {
             while(viewCurrentOriginKeybind.consumeClick()) {
-                if(!(Minecraft.getInstance().screen instanceof ViewOriginScreen)) {
-                    Minecraft.getInstance().setScreen(new ViewOriginScreen());
+                if(!(Minecraft.getInstance().gui.screen() instanceof ViewOriginScreen)) {
+                    Minecraft.getInstance().gui.setScreen(new ViewOriginScreen());
                 }
             }
         });

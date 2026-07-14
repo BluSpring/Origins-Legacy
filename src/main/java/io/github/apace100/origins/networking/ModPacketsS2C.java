@@ -59,8 +59,8 @@ public class ModPacketsS2C {
         context.client().execute(() -> {
             OriginComponent component = ModComponents.ORIGIN.get(context.player());
             component.setOrigin(layer, origin);
-            if(context.client().screen instanceof WaitForNextLayerScreen) {
-                ((WaitForNextLayerScreen)context.client().screen).openSelection();
+            if(context.client().gui.screen() instanceof WaitForNextLayerScreen layerScreen) {
+                layerScreen.openSelection();
             }
         });
     }
@@ -88,7 +88,7 @@ public class ModPacketsS2C {
                 }
             });
             Collections.sort(layers);
-            context.client().setScreen(new ChooseOriginScreen(layers, 0, showDirtBackground));
+            context.client().gui.setScreen(new ChooseOriginScreen(layers, 0, showDirtBackground));
         });
     }
 

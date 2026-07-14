@@ -71,7 +71,7 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 	}
 
 	private void openNextLayerScreen() {
-		Minecraft.getInstance().setScreen(new WaitForNextLayerScreen(layerList, currentLayerIndex, this.showDirtBackground));
+		Minecraft.getInstance().gui.setScreen(new WaitForNextLayerScreen(layerList, currentLayerIndex, this.showDirtBackground));
 	}
 
 	@Override

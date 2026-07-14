@@ -4,7 +4,7 @@ import java.net.HttpURLConnection
 import java.net.URI
 
 plugins {
-	id("net.fabricmc.fabric-loom") version "1.16-SNAPSHOT"
+	id("net.fabricmc.fabric-loom") version "1.17-SNAPSHOT"
 	`maven-publish`
 	id("me.modmuss50.mod-publish-plugin") version "2.1.1"
 }
@@ -98,7 +98,7 @@ dependencies {
 	}
 
 	implementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
-	runtimeOnly("maven.modrinth:lithium:mc26.1.2-0.24.1-fabric")
+	runtimeOnly("maven.modrinth:lithium:mc26.2-0.25.2-fabric")
 
 	include(implementation("com.moulberry:mixinconstraints:1.0.8")!!)
 }
