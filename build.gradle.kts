@@ -6,7 +6,7 @@ import java.net.URI
 plugins {
 	id("net.fabricmc.fabric-loom") version "1.16-SNAPSHOT"
 	`maven-publish`
-	id("me.modmuss50.mod-publish-plugin") version "0.7.+"
+	id("me.modmuss50.mod-publish-plugin") version "2.1.1"
 }
 
 base {
@@ -190,6 +190,8 @@ project.extensions.configure<ModPublishExtension>("publishMods") {
 	curseforge {
 		type = ReleaseType.STABLE
 		projectId = project.property("publishing.curseforge").toString()
+		client = true
+		server = true
 		accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
 		minecraftVersions.addAll((project.property("supported_versions") as String).split(","))
 
