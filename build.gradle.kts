@@ -24,6 +24,8 @@ group = project.property("maven_group") as String
 allprojects {
 	repositories {
 		maven("https://maven.parchmentmc.org")
+		maven("https://maven.bawnorton.com/releases")
+		maven("https://maven.enjarai.dev/mirrors")
 	}
 }
 
