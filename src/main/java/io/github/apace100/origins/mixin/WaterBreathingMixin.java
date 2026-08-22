@@ -59,7 +59,7 @@ public final class WaterBreathingMixin {
                                 this.level().addParticle(ParticleTypes.BUBBLE, this.getRandomX(0.5), this.getEyeY() + this.random.nextGaussian() * 0.08D, this.getRandomZ(0.5), f * 0.5F, g * 0.5F + 0.25F, h * 0.5F);
                             }
 
-                            this.hurt(ModDamageSources.getSource(damageSources(), ModDamageSources.NO_WATER_FOR_GILLS), 2.0F);
+                            this.hurt(ModDamageSources.getSource(registryAccess(), ModDamageSources.NO_WATER_FOR_GILLS), 2.0F);
                         }
                     } else {
                         int landGain = this.increaseAirSupply(0);
