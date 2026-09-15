@@ -26,6 +26,7 @@ allprojects {
 		maven("https://maven.parchmentmc.org")
 		maven("https://maven.bawnorton.com/releases")
 		maven("https://maven.enjarai.dev/mirrors")
+		maven("https://maven.is-immensely.gay/releases")
 	}
 }
 
@@ -100,7 +101,7 @@ dependencies {
 	}
 
 	implementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
-	runtimeOnly("maven.modrinth:lithium:mc26.2-0.25.2-fabric")
+//	runtimeOnly("maven.modrinth:lithium:mc26.2-0.25.2-fabric")
 
 	include(implementation("com.moulberry:mixinconstraints:1.0.8")!!)
 }

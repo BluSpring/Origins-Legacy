@@ -47,7 +47,7 @@ public class OriginLootCondition implements LootItemCondition {
     }
 
     public boolean test(LootContext lootContext) {
-        Optional<OriginComponent> optional = ModComponents.ORIGIN.maybeGet(lootContext.getOptionalParameter(LootContextParams.THIS_ENTITY));
+        Optional<OriginComponent> optional = ModComponents.ORIGIN.maybeGet(lootContext.getOptional(LootContextParams.THIS_ENTITY));
         if(optional.isPresent()) {
             OriginComponent component = optional.get();
             HashMap<OriginLayer, Origin> map = component.getOrigins();

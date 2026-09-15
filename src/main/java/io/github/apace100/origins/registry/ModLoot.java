@@ -14,7 +14,7 @@ import net.minecraft.world.level.storage.loot.entries.EmptyLootItem;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.SetEnchantmentsFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 public class ModLoot {
 
@@ -38,46 +38,46 @@ public class ModLoot {
             var identifier = resourceKey.identifier();
             if (DUNGEON_LOOT.equals(identifier)) {
                 LootPool.Builder lootPool = new LootPool.Builder();
-                lootPool.setRolls(ConstantValue.exactly(1))
+                lootPool.setRolls(ContextIntProviders.exactly(1))
                     .add(LootItem.lootTableItem(Items.ENCHANTED_BOOK)
                         .setWeight(20)
-                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ConstantValue.exactly(1f))))
+                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ContextIntProviders.exactly(1))))
                     .add(LootItem.lootTableItem(Items.ENCHANTED_BOOK)
                         .setWeight(10)
-                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ConstantValue.exactly(2f))))
+                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ContextIntProviders.exactly(2))))
                     .add(EmptyLootItem.emptyItem().setWeight(80));
                 tableBuilder.withPool(lootPool);
             } else if (STRONGHOLD_LIBRARY.equals(identifier)) {
                 LootPool.Builder lootPool = new LootPool.Builder();
-                lootPool.setRolls(ConstantValue.exactly(1))
+                lootPool.setRolls(ContextIntProviders.exactly(1))
                     .add(LootItem.lootTableItem(Items.ENCHANTED_BOOK)
                         .setWeight(20)
-                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ConstantValue.exactly(2f))))
+                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ContextIntProviders.exactly(2))))
                     .add(LootItem.lootTableItem(Items.ENCHANTED_BOOK)
                         .setWeight(10)
-                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ConstantValue.exactly(3f))))
+                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ContextIntProviders.exactly(3))))
                     .add(EmptyLootItem.emptyItem().setWeight(80));
                 tableBuilder.withPool(lootPool);
             } else if (MINESHAFT.equals(identifier)) {
                 LootPool.Builder lootPool = new LootPool.Builder();
-                lootPool.setRolls(ConstantValue.exactly(1))
+                lootPool.setRolls(ContextIntProviders.exactly(1))
                     .add(LootItem.lootTableItem(Items.ENCHANTED_BOOK)
                         .setWeight(20)
-                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ConstantValue.exactly(1f))))
+                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ContextIntProviders.exactly(1))))
                     .add(LootItem.lootTableItem(Items.ENCHANTED_BOOK)
                         .setWeight(5)
-                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ConstantValue.exactly(2f))))
+                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ContextIntProviders.exactly(2))))
                     .add(EmptyLootItem.emptyItem().setWeight(90));
                 tableBuilder.withPool(lootPool);
             } else if (WATER_RUIN.equals(identifier)) {
                 LootPool.Builder lootPool = new LootPool.Builder();
-                lootPool.setRolls(ConstantValue.exactly(1))
+                lootPool.setRolls(ContextIntProviders.exactly(1))
                     .add(LootItem.lootTableItem(Items.ENCHANTED_BOOK)
                         .setWeight(10)
-                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ConstantValue.exactly(1f))))
+                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ContextIntProviders.exactly(1))))
                     .add(LootItem.lootTableItem(Items.ENCHANTED_BOOK)
                         .setWeight(20)
-                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ConstantValue.exactly(2f))))
+                        .apply(new SetEnchantmentsFunction.Builder().withEnchantment(waterProtection, ContextIntProviders.exactly(2))))
                     .add(EmptyLootItem.emptyItem().setWeight(110));
                 tableBuilder.withPool(lootPool);
             }
