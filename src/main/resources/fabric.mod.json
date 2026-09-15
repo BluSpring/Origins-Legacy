@@ -57,7 +57,7 @@
     "playerabilitylib": ">=1.3.0",
     "cardinal-components-base": ">=8.0.0",
     "cardinal-components-entity": ">=8.0.0",
-    "cloth-config2": ">=26.2.0"
+    "cloth-config2": ">=26.3.0"
   },
   "breaks": {
     "optifabric": "<=1.11.18",
