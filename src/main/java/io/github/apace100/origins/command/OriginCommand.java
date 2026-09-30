@@ -5,18 +5,15 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.component.OriginComponent;
-import io.github.apace100.origins.networking.ModPackets;
 import io.github.apace100.origins.networking.OpenOriginScreenPacket;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.registry.ModComponents;
-import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
@@ -118,7 +115,7 @@ public class OriginCommand {
 			
 		}
 		
-		else serverCommandSource.sendFailure(Component.translatable("commands.origin.unregistered_in_layer", origin.getIdentifier(), originLayer.getIdentifier()));
+		else serverCommandSource.sendFailure(Component.translatable("commands.origin.unregistered_in_layer", Component.translationArg(origin.getIdentifier()), Component.translationArg(originLayer.getIdentifier())));
 		
 		return processedTargets;
 		
@@ -155,7 +152,7 @@ public class OriginCommand {
 			
 		}
 		
-		else serverCommandSource.sendFailure(Component.translatable("commands.origin.unregistered_in_layer", origin.getIdentifier(), originLayer.getIdentifier()));
+		else serverCommandSource.sendFailure(Component.translatable("commands.origin.unregistered_in_layer", Component.translationArg(origin.getIdentifier()), Component.translationArg(originLayer.getIdentifier())));
 		
 		return processedTargets;
 		
@@ -176,7 +173,7 @@ public class OriginCommand {
 		OriginLayer originLayer = LayerArgumentType.getLayer(commandContext, "layer");
 		Origin origin = originComponent.getOrigin(originLayer);
 		
-		serverCommandSource.sendSuccess(() -> Component.translatable("commands.origin.get.result", target.getDisplayName().getString(), Component.translatable(originLayer.getTranslationKey()), origin.getName(), origin.getIdentifier()), true);
+		serverCommandSource.sendSuccess(() -> Component.translatable("commands.origin.get.result", target.getDisplayName().getString(), Component.translatable(originLayer.getTranslationKey()), origin.getName(), Component.translationArg(origin.getIdentifier())), true);
 		
 		return 1;
 		
