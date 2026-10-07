@@ -107,7 +107,8 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 			content.accept(ModItems.ORB_OF_ORIGIN);
 		});
 
-		Registry.register(BuiltInRegistries.TRIGGER_TYPES, Origins.identifier("choose_origin"), ChoseOriginCriterion.INSTANCE);
+		BuiltInRegistries.TRIGGER_TYPES.addAlias(Origins.identifier("choose_origin"), Origins.identifier("chose_origin")); // O-L: my bad.
+		Registry.register(BuiltInRegistries.TRIGGER_TYPES, Origins.identifier("chose_origin"), ChoseOriginCriterion.INSTANCE);
 		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Origins.identifier("origin_targets"), OriginTargetsComponent.TYPE);
 	}
 
