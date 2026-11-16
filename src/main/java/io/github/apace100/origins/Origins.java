@@ -145,7 +145,6 @@ public class Origins implements ModInitializer, OrderedResourceListenerInitializ
 
 		IdentifiableResourceReloadListener badgeLoader = BadgeManager.REGISTRY.getLoader();
 		loader.registerReloadListener(badgeLoader.getFabricId(), badgeLoader);
-		loader.addListenerOrdering(powerData, badgeLoader.getFabricId());
 
 		loader.addListenerOrdering(badgeLoader.getFabricId(), powerData);
 	}
